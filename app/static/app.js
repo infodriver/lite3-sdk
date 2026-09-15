@@ -17,6 +17,8 @@ const els = {
   rawSendBtn: $("rawSendBtn"), clearLogBtn: $("clearLogBtn"), logBox: $("logBox"),
   signVx: $("signVx"), signYaw: $("signYaw"), signLat: $("signLat"),
   joyMode: $("joyMode"), joyCurve: $("joyCurve"), joyScale: $("joyScale"),
+  camFps: $("camFps"), camScale: $("camScale"), camQuality: $("camQuality"),
+  camApply: $("camApply"), camOff: $("camOff"),
 };
 
 /* config-driven action buttons (stand/sit are built-in; anything added to
@@ -600,6 +602,28 @@ els.joyScale.onchange = async (e) => {
     hold.active = false;
     log("info", "speed scale -> " + v);
   } catch (err) { log("error", "speed scale: " + err.message); }
+};
+
+/* camera quality/size controls */
+els.camApply.onclick = async () => {
+  try {
+    await api("/api/config", {
+      section: "camera",
+      fps: parseInt(els.camFps.value, 10) || 6,
+      scale: els.camScale.value.trim() || "480:-1",
+      quality: parseInt(els.camQuality.value, 10) || 11,
+      enabled: true,
+      start: true,
+    });
+    log("info", "camera profile applied (" + els.camFps.value + " fps, " +
+        els.camScale.value + ", q" + els.camQuality.value + ")");
+  } catch (err) { log("error", "camera: " + err.message); }
+};
+els.camOff.onclick = async () => {
+  try {
+    await api("/api/config", { section: "camera", enabled: false });
+    log("info", "camera off");
+  } catch (err) { log("error", "camera: " + err.message); }
 };
 
 /* ---------------- one-click connect ---------------- */

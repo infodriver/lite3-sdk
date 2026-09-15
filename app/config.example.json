@@ -307,9 +307,9 @@
     "enabled": true,
     "kind": "ffmpeg",
     "url": "rtsp://{robot_ip}:8554/test",
-    "fps": 8,
-    "scale": "640:-1",
-    "quality": 7,
+    "fps": 6,
+    "scale": "480:-1",
+    "quality": 11,
     "auto_probe": true
   },
   "cameras": [
@@ -317,9 +317,10 @@
       "name": "Robot Cam (front)",
       "url": "rtsp://{robot_ip}:8554/test",
       "kind": "ffmpeg",
-      "fps": 8,
-      "scale": "640:-1",
-      "auto_probe": true
+      "fps": 6,
+      "scale": "480:-1",
+      "auto_probe": true,
+      "quality": 11
     }
   ],
   "camera_active": 0

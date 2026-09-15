@@ -79,6 +79,17 @@
     <details class="adv">
       <summary>Advanced — connection & raw frames</summary>
       <h4 class="adv-h">Robot connection</h4>
+      <h4 class="adv-h">Camera stream (lower = lighter on Wi-Fi)</h4>
+      <div class="adv-body">
+        <label>FPS <input id="camFps" class="mono" value="6" spellcheck="false"></label>
+        <label>Scale <input id="camScale" class="mono" value="480:-1" spellcheck="false"></label>
+        <label>Quality <input id="camQuality" class="mono" value="11" spellcheck="false"
+               title="mjpeg -q:v: 2 = best/largest, 18 = worst/smallest"></label>
+        <label style="grid-column: span 2">
+          <button id="camApply" class="btn">Apply &amp; restart camera</button>
+          <button id="camOff" class="btn">Camera off</button>
+        </label>
+      </div>
       <div class="adv-body">
         <label style="grid-column: span 2">Robot IP <input id="robotIpAdv" class="mono" value="192.168.2.1" spellcheck="false"
                title="IP of the robot's motion host on the current network"></label>
