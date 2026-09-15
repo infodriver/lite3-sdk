@@ -134,37 +134,47 @@ python3 server.py --port 8123          # then open http://localhost:8123
 
 Everything is zero-dependency Python 3 stdlib (ffmpeg only needed for RTSP sources).
 
-## Actions (same catalog as the web console)
+## Actions (same catalog & grouping as the web console)
 
 ```python
-dog.action("dance")        # or any name from dog.list_actions()
-dog.turn_over()            # convenience wrappers exist for every action
-dog.backflip(); dog.long_jump(); dog.twist(); dog.twist_jump()
-dog.recover_left(); dog.recover_right()          # roll back from upside-down
-dog.gait_slow(); dog.gait_medium(); dog.gait_fast(); dog.gait_crawl()
+dog.action("dance")            # any name from dog.list_actions()
+dog.recover_left(); dog.recover_right()      # from upside-down
+dog.twist(); dog.twist_jump(); dog.backflip(); dog.long_jump()
 dog.mode_manual(); dog.mode_move()
+dog.gait_slow(); dog.gait_medium(); dog.gait_fast(); dog.gait_crawl()
+dog.stand(); dog.sit(); dog.hello(); dog.turn_over()
 ```
 
-| Action | Code | Needs |
+| Recovery (from upside down) | | |
 |---|---|---|
-| `stand_up` / `sit_down` | `0x21010202` | posture toggle (one code for both) |
-| `hello` | `0x21010506` | sitting (auto) |
-| `dance` (moonwalk) | `0x2101030C` | standing |
-| `twist` / `twist_jump` | `0x21010204` / `0x2101020D` | standing |
-| `turn_over` | `0x21010205` | sitting (auto) - rolls onto back |
-| `backflip` / `long_jump` | `0x21010502` / `0x2101050B` | sitting (auto) |
-| `recover_left` / `recover_right` | `0x21010205` | from back |
-| gaits: `gait_slow/medium/fast/crawl` | `0x21010300/307/303/406` | single-shot switch |
-| modes: `mode_manual` / `mode_move` | `0x21010C02` / `0x21010D06` | single-shot switch |
+| ↺ `recover_left()` | ↻ `recover_right()` | `0x21010205` |
 
-Posture handling is automatic (the dog is sat/stood first when the action needs a
-specific pose and the state is known or forced), actions replay at ~1 Hz, and
-E-stop cancels any action mid-play.
+| Poses & actions | code | needs |
+|---|---|---|
+| 🌀 `twist()` | `0x21010204` | standing |
+| 🌪️ `twist_jump()` | `0x2101020D` | standing |
+| 🤸 `backflip()` | `0x21010502` | sitting (auto) |
+| 🦘 `long_jump()` | `0x2101050B` | sitting (auto) |
+| 👋 `hello()` | `0x21010506` | sitting (auto) |
+| 🕺 `dance()` | `0x2101030C` | standing |
+| 🔄 `turn_over()` | `0x21010205` | sitting (auto) - rolls onto back |
+| 🐕 `stand()` / 🪑 `sit()` | `0x21010202` | one posture toggle |
 
-CLI: `python3 -m lite3sdk.cli actions` lists them; every action also has its own
-subcommand (`... cli dance`, `... cli turn_over`, `... cli gait_fast`).
+| Modes | | Gaits | |
+|---|---|---|---|
+| 🎮 `mode_manual()` | `0x21010C02` | 🐢 `gait_slow()` | `0x21010300` |
+| 🕹️ `mode_move()` | `0x21010D06` | 🚶 `gait_medium()` | `0x21010307` |
+| | | ⚡ `gait_fast()` | `0x21010303` |
+| | | 🐛 `gait_crawl()` | `0x21010406` |
 
-> Codes marked "sitting"/standing come from DeepRobotics' repos and community
-> tables; `hello`, `dance`, `stand/sit` and the velocity/telemetry paths are
-> live-verified. If an action is ignored by your firmware, capture the real code
-> from the official remote (`app/tools/retroid_listen.py`).
+Posture handling is automatic (sit/stand first where the action requires it, forced
+for rolls/jumps), actions replay at ~1 Hz, modes/gaits are single-shot, and E-stop
+cancels any action mid-play.
+
+CLI: `python3 -m lite3sdk.cli actions` prints this grouped list; every action also
+has a shortcut subcommand (`... cli dance`, `... cli turn_over`, `... cli gait_fast`).
+
+> `hello`, `dance`, stand/sit, camera, velocity and telemetry are live-verified on
+> the robot; a few codes (twist/jumps/turn-over) come from DeepRobotics' repos and
+> community tables - if your firmware ignores one, capture the real code from the
+> official remote (`app/tools/retroid_listen.py`).

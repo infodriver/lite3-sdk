@@ -181,39 +181,59 @@ class Frame:
 
 
 # ---------------------------------------------------------------- actions
-# Full action catalog (same set as the Lite3 Pilot web console's buttons).
+# Full action catalog (same set + grouping + icons as the Lite3 Pilot web
+# console buttons).
+#   group:   "recovery" | "action" | "mode" | "gait"
 #   posture: required start pose ('stand'/'sit'/None)
 #   force:   apply the posture step even when the tracked state is unknown
 #   once:    single-shot switch (modes/gaits) instead of a 3x 1 Hz replay
 ACTIONS = {
-    "stand_up":     {"code": FRAME_STAND_SIT, "posture": None,    "toggle": True,
-                     "label": "Stand (posture toggle)"},
-    "sit_down":     {"code": FRAME_STAND_SIT, "posture": None,    "toggle": True,
-                     "label": "Sit (posture toggle)"},
-    "hello":        {"code": FRAME_HELLO,     "posture": "sit",   "force": True,
-                     "label": "Hello pose"},
-    "dance":        {"code": 0x2101030C,      "posture": "stand",
-                     "label": "Dance / moonwalk"},
-    "twist":        {"code": 0x21010204,      "posture": "stand",
-                     "label": "Twist"},
-    "twist_jump":   {"code": 0x2101020D,      "posture": "stand",
-                     "label": "Twist jump"},
-    "turn_over":    {"code": 0x21010205,      "posture": "sit",   "force": True,
-                     "label": "Turn over (rolls onto back)"},
-    "backflip":     {"code": 0x21010502,      "posture": "sit",   "force": True,
-                     "label": "Backflip"},
-    "long_jump":    {"code": 0x2101050B,      "posture": "sit",   "force": True,
-                     "label": "Long jump"},
-    "recover_left":  {"code": 0x21010205,     "posture": None,
-                      "label": "Recover from back (left roll)"},
-    "recover_right": {"code": 0x21010205,     "posture": None,
-                      "label": "Recover from back (right roll)"},
-    "mode_manual":  {"code": 0x21010C02,      "once": True,
-                     "label": "Mode: manual/remote"},
-    "mode_move":    {"code": 0x21010D06,      "once": True,
-                     "label": "Mode: move"},
-    "gait_slow":    {"code": 0x21010300,      "once": True, "label": "Gait: slow"},
-    "gait_medium":  {"code": 0x21010307,      "once": True, "label": "Gait: medium"},
-    "gait_fast":    {"code": 0x21010303,      "once": True, "label": "Gait: fast"},
-    "gait_crawl":   {"code": 0x21010406,      "once": True, "label": "Gait: crawl"},
+    # --- Recovery (from upside down) ---
+    "recover_left":  {"code": 0x21010205,      "group": "recovery", "icon": "↺",
+                      "label": "Recover left", "posture": None},
+    "recover_right": {"code": 0x21010205,      "group": "recovery", "icon": "↻",
+                      "label": "Recover right", "posture": None},
+    # --- Poses & actions ---
+    "twist":        {"code": 0x21010204,      "group": "action", "icon": "🌀",
+                     "label": "Twist", "posture": "stand"},
+    "twist_jump":   {"code": 0x2101020D,      "group": "action", "icon": "🌪️",
+                     "label": "Twist jump", "posture": "stand"},
+    "backflip":     {"code": 0x21010502,      "group": "action", "icon": "🤸",
+                     "label": "Backflip", "posture": "sit", "force": True},
+    "long_jump":    {"code": 0x2101050B,      "group": "action", "icon": "🦘",
+                     "label": "Long jump", "posture": "sit", "force": True},
+    # built-in pose buttons of the app
+    "hello":        {"code": FRAME_HELLO,     "group": "action", "icon": "👋",
+                     "label": "Hello", "posture": "sit", "force": True},
+    "dance":        {"code": 0x2101030C,      "group": "action", "icon": "🕺",
+                     "label": "Dance", "posture": "stand"},
+    "turn_over":    {"code": 0x21010205,      "group": "action", "icon": "🔄",
+                     "label": "Turn over", "posture": "sit", "force": True},
+    # --- Modes ---
+    "mode_manual":  {"code": 0x21010C02,      "group": "mode", "icon": "🎮",
+                     "label": "Manual mode", "once": True},
+    "mode_move":    {"code": 0x21010D06,      "group": "mode", "icon": "🕹️",
+                     "label": "Move mode", "once": True},
+    # --- Gaits ---
+    "gait_slow":    {"code": 0x21010300,      "group": "gait", "icon": "🐢",
+                     "label": "Slow", "once": True},
+    "gait_medium":  {"code": 0x21010307,      "group": "gait", "icon": "🚶",
+                     "label": "Medium", "once": True},
+    "gait_fast":    {"code": 0x21010303,      "group": "gait", "icon": "⚡",
+                     "label": "Fast", "once": True},
+    "gait_crawl":   {"code": 0x21010406,      "group": "gait", "icon": "🐛",
+                     "label": "Crawl", "once": True},
+    # --- posture (toggle) ---
+    "stand_up":     {"code": FRAME_STAND_SIT, "group": "posture", "icon": "🐕",
+                     "label": "Stand", "toggle": True},
+    "sit_down":     {"code": FRAME_STAND_SIT, "group": "posture", "icon": "🪑",
+                     "label": "Sit", "toggle": True},
 }
+
+# Display order of the groups (matches the web console)
+ACTION_GROUPS = [
+    ("recovery", "Recovery (from upside down)"),
+    ("action", "Poses & actions"),
+    ("mode", "Modes"),
+    ("gait", "Gaits"),
+]

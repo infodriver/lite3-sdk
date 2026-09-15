@@ -37,6 +37,9 @@ from .protocol import (
     parse_state,
     parse_joint_state,
     parse_handle_state,
+    ACTIONS,
+    ACTION_GROUPS,
+    CAMERA_PORT,
 )
 from .robot import Lite3, MotionError
 
@@ -62,5 +65,8 @@ __all__ = [
     "parse_state",
     "parse_joint_state",
     "parse_handle_state",
+    "ACTIONS",
+    "ACTION_GROUPS",
+    "CAMERA_PORT",
     "__version__",
 ]

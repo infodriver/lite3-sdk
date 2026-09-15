@@ -106,8 +106,24 @@ def cmd_action(dog, args):
 
 
 def cmd_actions(dog, args):
-    for name, spec in sorted(dog.list_actions().items()):
-        print("%-14s 0x%08X  %s" % (name, spec["code"], spec.get("label", "")))
+    """Print the catalog grouped exactly like the web console buttons."""
+    from .protocol import ACTION_GROUPS, ACTIONS
+    by_group = {}
+    for name, spec in ACTIONS.items():
+        by_group.setdefault(spec.get("group", "action"), []).append((name, spec))
+    for gid, title in ACTION_GROUPS:
+        items = by_group.get(gid)
+        if not items:
+            continue
+        print(title)
+        for name, spec in sorted(items, key=lambda kv: kv[1].get("label", kv[0])):
+            print("  %-3s %-14s %-12s (0x%08X)" % (spec.get("icon", ""), spec.get("label", name), name, spec["code"]))
+        print()
+    extra = [g for g in by_group if g not in dict(ACTION_GROUPS)]
+    for g in extra:
+        print(g)
+        for name, spec in sorted(by_group[g]):
+            print("  %-3s %-14s (0x%08X)" % (spec.get("icon", ""), spec.get("label", name), spec["code"]))
 
 
 def main(argv=None):
