@@ -1,0 +1,326 @@
+{
+  "robot_ip": "192.168.2.1",
+  "cmd_port": 43893,
+  "state_port": 43897,
+  "state_bind": "0.0.0.0",
+  "http_port": 8123,
+  "limits": {
+    "max_vx": 0.5,
+    "max_vy": 0.4,
+    "max_wz": 0.8,
+    "rate_hz": 50,
+    "tail_ms": 300,
+    "action_ms": 600
+  },
+  "joystick": {
+    "port": 12121,
+    "id": 1,
+    "seq": 419,
+    "yaw_sign": -1,
+    "range": 1000,
+    "mode": "velocity",
+    "curve": 1.25,
+    "scale": 1.0
+  },
+  "velocity": {
+    "code": "0x140",
+    "type": 1,
+    "payload": "double",
+    "sign": 1
+  },
+  "velocity_lateral": {
+    "code": "0x145",
+    "type": 1,
+    "payload": "double",
+    "sign": -1
+  },
+  "velocity_yaw": {
+    "code": "0x141",
+    "type": 1,
+    "payload": "double",
+    "sign": 1,
+    "note": "flip sign to 1/-1 if turning direction is reversed"
+  },
+  "velocity_codes": {
+    "x": "0x140",
+    "y": "0x145",
+    "z": "0x141"
+  },
+  "velocity_type": 1,
+  "yaw_negate": true,
+  "auto_mode": {
+    "code": "0x21010C03",
+    "type": 0,
+    "value": 0
+  },
+  "actions": {
+    "stand_up": {
+      "enabled": true,
+      "note": "stand up (0x21010202 - posture toggle)",
+      "frame": {
+        "code": "0x21010202",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83d\udc15",
+      "label": "Stand"
+    },
+    "sit_down": {
+      "enabled": true,
+      "note": "sit down (0x21010202 - posture toggle)",
+      "frame": {
+        "code": "0x21010202",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83e\ude91",
+      "label": "Sit"
+    },
+    "hello_pose": {
+      "enabled": true,
+      "note": "hello pose (0x21010506 - verified)",
+      "posture": "sit",
+      "frame": {
+        "code": "0x21010506",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83d\udc4b",
+      "label": "Hello"
+    },
+    "dance": {
+      "enabled": true,
+      "note": "dance / moonwalk (0x2101030C - verified)",
+      "posture": "stand",
+      "frame": {
+        "code": "0x2101030C",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83d\udd7a",
+      "label": "Dance"
+    },
+    "twist": {
+      "enabled": true,
+      "note": "twist (0x21010204 - standing)",
+      "posture": "stand",
+      "frame": {
+        "code": "0x21010204",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83c\udf00",
+      "label": "Twist",
+      "group": "action"
+    },
+    "twist_jump": {
+      "enabled": true,
+      "note": "twist jump (0x2101020D - standing, moves dog)",
+      "posture": "stand",
+      "frame": {
+        "code": "0x2101020D",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83c\udf2a\ufe0f",
+      "label": "Twist jump",
+      "group": "action"
+    },
+    "turn_over": {
+      "enabled": true,
+      "note": "turn over - rolls the dog onto its back (0x21010205, from sitting)",
+      "frame": {
+        "code": "0x21010205",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83d\udd04",
+      "label": "Turn over",
+      "replay": "slow",
+      "posture": "sit",
+      "force_posture": true
+    },
+    "backflip": {
+      "enabled": true,
+      "note": "backflip (0x21010502 - sitting, moves dog)",
+      "posture": "sit",
+      "frame": {
+        "code": "0x21010502",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83e\udd38",
+      "label": "Backflip",
+      "group": "action"
+    },
+    "long_jump": {
+      "enabled": true,
+      "note": "long jump (0x2101050B - sitting, moves dog)",
+      "posture": "sit",
+      "frame": {
+        "code": "0x2101050B",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83e\udd98",
+      "label": "Long jump",
+      "group": "action"
+    },
+    "mode_manual": {
+      "enabled": true,
+      "once": true,
+      "note": "MODE \u00b7 manual/remote (0x21010C02 - experimental)",
+      "frame": {
+        "code": "0x21010C02",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83c\udfae",
+      "label": "Manual mode",
+      "group": "mode"
+    },
+    "mode_move": {
+      "enabled": true,
+      "once": true,
+      "note": "MODE \u00b7 move (0x21010D06 - experimental)",
+      "frame": {
+        "code": "0x21010D06",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83d\udd79\ufe0f",
+      "label": "Move mode",
+      "group": "mode"
+    },
+    "gait_slow": {
+      "enabled": true,
+      "once": true,
+      "note": "GAIT \u00b7 slow (0x21010300 - experimental)",
+      "frame": {
+        "code": "0x21010300",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83d\udc22",
+      "label": "Slow",
+      "group": "gait"
+    },
+    "gait_medium": {
+      "enabled": true,
+      "once": true,
+      "note": "GAIT \u00b7 medium (0x21010307 - experimental)",
+      "frame": {
+        "code": "0x21010307",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83d\udeb6",
+      "label": "Medium",
+      "group": "gait"
+    },
+    "gait_fast": {
+      "enabled": true,
+      "once": true,
+      "note": "GAIT \u00b7 fast (0x21010303 - experimental)",
+      "frame": {
+        "code": "0x21010303",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\u26a1",
+      "label": "Fast",
+      "group": "gait"
+    },
+    "gait_crawl": {
+      "enabled": true,
+      "once": true,
+      "note": "GAIT \u00b7 crawl (0x21010406 - experimental)",
+      "frame": {
+        "code": "0x21010406",
+        "type": 0,
+        "value": 0
+      },
+      "icon": "\ud83d\udc1b",
+      "label": "Crawl",
+      "group": "gait"
+    },
+    "recover_left": {
+      "enabled": true,
+      "note": "roll the robot over from its back (uses official Turn Over 0x21010205; left/right variants need official-app capture)",
+      "group": "recovery",
+      "icon": "\u21ba",
+      "label": "Recover left",
+      "frame": {
+        "code": "0x21010205",
+        "type": 0,
+        "value": 0
+      },
+      "replay": "slow"
+    },
+    "recover_right": {
+      "enabled": true,
+      "note": "roll the robot over from its back (uses official Turn Over 0x21010205; left/right variants need official-app capture)",
+      "group": "recovery",
+      "icon": "\u21bb",
+      "label": "Recover right",
+      "frame": {
+        "code": "0x21010205",
+        "type": 0,
+        "value": 0
+      },
+      "replay": "slow"
+    }
+  },
+  "heartbeat": {
+    "code": "0x21040001",
+    "type": 0,
+    "value": 0,
+    "interval_ms": 300
+  },
+  "stop_action": {
+    "code": "0x21010C0B",
+    "type": 0
+  },
+  "allow_motion_without_telemetry": true,
+  "wifi": {
+    "enabled": true,
+    "robot_ssid": "YSC-JYML-XXXXX",
+    "robot_password": "REPLACE_WITH_ROBOT_HOTSPOT_PASSWORD",
+    "robot_subnet": "192.168.2.",
+    "home_ssid": "",
+    "retries": 3
+  },
+  "robot_camera": {
+    "port": 43899,
+    "on": {
+      "code": "0x21012109",
+      "type": 0,
+      "value": 64
+    },
+    "off": {
+      "code": "0x21012109",
+      "type": 0,
+      "value": 0
+    }
+  },
+  "camera": {
+    "enabled": true,
+    "kind": "ffmpeg",
+    "url": "rtsp://{robot_ip}:8554/test",
+    "fps": 8,
+    "scale": "640:-1",
+    "quality": 7,
+    "auto_probe": true
+  },
+  "cameras": [
+    {
+      "name": "Robot Cam (front)",
+      "url": "rtsp://{robot_ip}:8554/test",
+      "kind": "ffmpeg",
+      "fps": 8,
+      "scale": "640:-1",
+      "auto_probe": true
+    }
+  ],
+  "camera_active": 0
+}

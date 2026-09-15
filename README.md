@@ -104,3 +104,29 @@ lite3_sdk/
 > testing. The software E-stop only stops *this* SDK sending frames — the
 > **physical E-stop always wins**. The robot returns to its own damping
 > controller ~1 s after the last UDP frame.
+
+---
+
+## Web console (identical to the Lite3 Pilot app)
+
+This repo also ships the robot's web console - the same UI as `http://localhost:8123`
+(motion keys + dual joystick, action catalog, camera feed, event log):
+
+```
+app/                 web console (python3 stdlib only)
+  server.py          UDP driver + telemetry + MJPEG camera proxy + HTTP server
+  static/            index.html / app.js / style.css  (the UI)
+  config.example.json  copy to config.json and edit
+  tools/retroid_listen.py  decode official remote frames (:12121)
+  README.md          full protocol + setup notes
+```
+
+Run it:
+
+```bash
+cd app
+cp config.example.json config.json     # set your robot IP / Wi-Fi names
+python3 server.py --port 8123          # then open http://localhost:8123
+```
+
+Everything is zero-dependency Python 3 stdlib (ffmpeg only needed for RTSP sources).

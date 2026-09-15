@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lite3 Web Pilot</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="data:,">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="logo">🐕</span>
+    <h1>Lite3 Web Pilot</h1>
+    <span id="connLed" class="led off" title="connection"></span>
+    <span id="connText" class="dim">disconnected</span>
+  </div>
+  <div class="header-right">
+    <button id="connectBtn" class="btn">🔌 Connect</button>
+    <button id="estopBtn" class="btn-estop" disabled>E-STOP</button>
+    <button id="returnBtn" class="btn-return" hidden>⟲&nbsp; Return</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ robot camera ============ -->
+  <section class="panel cam-panel">
+    <div class="panel-head">
+      <h2>📷 Robot camera</h2>
+      <div class="head-actions">
+        <span id="camState" class="dim"></span>
+      </div>
+    </div>
+    <div class="cam-body">
+      <div id="camPlaceholder" class="cam-placeholder">
+        <p>No video</p>
+        <p class="hint">opens automatically when the robot is connected</p>
+      </div>
+      <img id="camImg" alt="robot camera" hidden>
+    </div>
+  </section>
+
+  <!-- ============ motion ============ -->
+  <section class="panel mov-panel">
+    <div class="cmd-row">
+      <button id="standBtn" class="btn-stand" disabled title="STAND - posture toggle 0x21010202">🐕&nbsp; STAND</button>
+      <button id="sitBtn" class="btn-sit" disabled title="SIT - posture toggle 0x21010202">🪑&nbsp; SIT</button>
+      <button id="helloBtn" class="btn-hello" disabled title="HELLO pose 0x21010506">👋&nbsp; HELLO</button>
+      <button id="danceBtn" class="btn-hello" disabled title="DANCE / moonwalk 0x2101030C">🕺&nbsp; DANCE</button>
+      <button id="turnOverBtn" class="btn label-btn" disabled title="Turn over 0x21010205 (needs sitting - auto-sits first)">🔄&nbsp; TURN OVER</button>
+    </div>
+    <div class="cmd-row" id="actionBtns" hidden style="margin-top:8px"></div>
+    <p class="hint" id="actionHint" hidden style="margin-top:6px">Robot commands — hover a button for its code. Poses auto-set the needed posture first.</p>
+    <div class="panel-head" style="margin-top:10px">
+      <h2>🎮 Drive</h2>
+      <div class="head-actions">
+        <button id="stopBtn" class="btn">Stop</button>
+      </div>
+    </div>
+    <div class="stick-wrap" style="margin-top:10px">
+      <div class="turn-row">
+        <button id="turnLBtn" class="btn label-btn" disabled title="Hold to side-walk (slide) left">↤&nbsp; Slide left</button>
+        <button id="turnRBtn" class="btn label-btn" disabled title="Hold to side-walk (slide) right">↦&nbsp; Slide right</button>
+      </div>
+      <div class="sticks">
+        <div id="stick" class="stick">
+          <div id="stickKnob" class="stick-knob"></div>
+          <div class="stick-labels"><span>FWD</span><span class="mid">turn ←  →</span><span>BACK</span></div>
+        </div>
+        <div id="stickR" class="stick">
+          <div id="stickRKnob" class="stick-knob"></div>
+          <div class="stick-labels"><span>FWD</span><span class="mid">slide ←  →</span><span>BACK</span></div>
+        </div>
+      </div>
+      <div id="joyInfo" class="joy-info mono dim">idle</div>
+      <p class="hint center" style="margin-top:8px">left stick: up/down = forward/back · left/right = turn<br>right stick: left/right = slide sideways (up/down = forward/back)</p>
+    </div>
+    <details class="adv">
+      <summary>Advanced — connection & raw frames</summary>
+      <h4 class="adv-h">Robot connection</h4>
+      <div class="adv-body">
+        <label style="grid-column: span 2">Robot IP <input id="robotIpAdv" class="mono" value="192.168.2.1" spellcheck="false"
+               title="IP of the robot's motion host on the current network"></label>
+        <label>Forward sign <select id="signVx"><option value="1">+ (normal)</option><option value="-1">- (reverse)</option></select></label>
+        <label>Turn sign <select id="signYaw"><option value="1">+</option><option value="-1">-</option></select></label>
+        <label>Lateral sign <select id="signLat"><option value="1">+</option><option value="-1">-</option></select></label>
+        <label>Joystick mode <select id="joyMode">
+          <option value="velocity">Velocity frames (proven)</option>
+          <option value="retroid">Retroid / official SDK (0x55 0x66 → :12121)</option>
+        </select></label>
+        <label>Stick curve <select id="joyCurve">
+          <option value="1">Linear</option>
+          <option value="1.25" selected>Soft (fine control)</option>
+          <option value="1.6">Soft+</option>
+        </select></label>
+        <label>Speed scale <select id="joyScale">
+          <option value="0.5">50%</option>
+          <option value="0.75">75%</option>
+          <option value="1" selected>100%</option>
+          <option value="1.5">150% (faster)</option>
+        </select></label>
+        <p class="hint" style="grid-column: 1 / -1">Dog on its own Wi-Fi → 192.168.2.1 · dog on home Wi-Fi → its LAN IP.<br>
+        If the dog moves backward or turns the wrong way, flip the sign - takes effect instantly.</p>
+      </div>
+      <h4 class="adv-h">Raw command frames</h4>
+      <div class="adv-body">
+        <label>Code (hex) <input id="rawCode" class="mono" value="0x21010135" spellcheck="false"></label>
+        <label>Value (int) <input id="rawValue" class="mono" value="-9553" spellcheck="false"></label>
+        <label>Type <input id="rawType" class="mono" value="0" spellcheck="false"></label>
+        <label>Payload hex <input id="rawHex" class="mono" placeholder="optional, e.g. 000000000000f03f" spellcheck="false"></label>
+      <div class="row" style="grid-column: 1 / -1">
+        <button id="rawSendBtn" class="btn warn">Send once</button>
+      </div>
+      <p class="hint" style="grid-column: 1 / -1">Sends the frame 12 times over ~0.6&nbsp;s. Codes are firmware
+      specific — capture from the official app with <span class="mono">tcpdump -x port 43893</span>
+      and verify on a leashed/stood robot.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ log ============ -->
+  <section class="panel log-panel">
+    <div class="panel-head"><h2>🧾 Event log</h2><button id="clearLogBtn" class="btn small">clear</button></div>
+    <div id="logBox" class="log-box"></div>
+  </section>
+</main>
+
+<footer class="dim">
+  Lite3 Web Pilot · safety: physical E-stop always wins · keep 5&nbsp;m clear while moving
+</footer>
+<script src="/app.js"></script>
+</body>
+</html>
