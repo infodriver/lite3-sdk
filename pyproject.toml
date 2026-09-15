@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lite3-sdk"
+version = "0.1.0"
+description = "Zero-dependency UDP control SDK for the DeepRobotics Jueying Lite3 robot dog"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["deeprobotics", "lite3", "robodog", "udp", "robot"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: System :: Hardware",
+]
+
+[tool.setuptools.packages.find]
+include = ["lite3sdk*"]
