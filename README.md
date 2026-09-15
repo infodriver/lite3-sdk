@@ -73,6 +73,9 @@ or drive() is refused until a packet arrives.
 | `hello()` | stand + yaw wiggle (blocking, E-stop aborts) |
 | `send_raw(code, type, value, payload, repeats)` | arbitrary frame |
 | `telemetry`, `state()`, `battery_pct`, `charging`, `height_m`, `wait_telemetry()` | telemetry access |
+| `camera_on()` / `camera_off()` | start/stop the robot's camera services (UDP 43899) |
+| `camera_state()` | query camera/AI service state (`0x2101210D`) |
+| `camera_url` | RTSP stream URL (`rtsp://<robot>:8554/test`) |
 | `lite3sdk.protocol` | `build_frame`, `velocity_frame`, `parse_state`, frame constants |
 
 ## Wire protocol

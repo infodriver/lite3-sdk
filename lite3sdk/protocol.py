@@ -28,6 +28,15 @@ import struct
 # Ports
 CMD_PORT = 43893    # robot listens here for command frames
 STATE_PORT = 43897  # robot streams 0x0901 telemetry here (set in network.toml)
+CAMERA_PORT = 43899 # robot's app-service port (camera / AI service commands)
+
+# Camera / AI service control (AppSimpleCMD to CAMERA_PORT)
+FRAME_CAMERA_ON = 0x21012109    # value 0x40 = start the robot's camera services
+FRAME_CAMERA_OFF = 0x21012109   # value 0x00 = stop them
+FRAME_CAMERA_QUERY = 0x2101210D # query state: replies 0x11 active / 0x10 inactive
+CAMERA_VALUE_ON = 0x40
+CAMERA_RTSP_PATH = "/test"      # RTSP stream name on port 8554
+CAMERA_RTSP_PORT = 8554
 
 # Simple/action frame codes (type 0, value 0 unless noted)
 FRAME_AUTO_MODE = 0x21010C03   # navigation/auto mode (velocity-follow)

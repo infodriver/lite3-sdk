@@ -89,6 +89,17 @@ def cmd_raw(dog, args):
     print("raw frame -> %s (%d B)" % (frame.hex(), len(frame)))
 
 
+def cmd_camera(dog, args):
+    if args.action == "on":
+        print(dog.camera_on())
+        print("stream:", dog.camera_url)
+    elif args.action == "off":
+        print(dog.camera_off())
+    else:
+        print(dog.camera_state())
+        print("stream:", dog.camera_url)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(
         prog="lite3sdk", description="DeepRobotics Jueying Lite3 control SDK CLI",
@@ -145,6 +156,10 @@ def main(argv=None):
     p.add_argument("--repeats", type=int, default=1)
     p.add_argument("--interval", type=float, default=0.0)
     p.set_defaults(fn=cmd_raw)
+
+    p = sub.add_parser("camera", help="camera services: on | off | state")
+    p.add_argument("action", choices=["on", "off", "state"])
+    p.set_defaults(fn=cmd_camera)
 
     args = ap.parse_args(argv)
     listen = args.cmd == "status"  # only status needs the telemetry socket

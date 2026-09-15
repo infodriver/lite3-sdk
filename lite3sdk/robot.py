@@ -48,7 +48,7 @@ class Lite3:
     def __init__(self, robot_ip=DEFAULT_IP, cmd_port=P.CMD_PORT, state_port=P.STATE_PORT,
                  bind_state="0.0.0.0", max_vx=0.5, max_vy=0.4, max_wz=0.8,
                  rate_hz=50, tail_ms=300, heartbeat_ms=300,
-                 allow_motion_without_telemetry=True):
+                 allow_motion_without_telemetry=True, camera_port=P.CAMERA_PORT):
         self.robot_ip = robot_ip
         self.cmd_port = cmd_port
         self.state_port = state_port
@@ -60,6 +60,7 @@ class Lite3:
         self.tail_ms = int(tail_ms)
         self.heartbeat_ms = int(heartbeat_ms)
         self.allow_motion_without_telemetry = bool(allow_motion_without_telemetry)
+        self.camera_port = int(camera_port)
         self.yaw_sign = -1.0  # matches console calibration; flip if reversed
 
         self._lock = threading.Lock()
@@ -379,6 +380,62 @@ class Lite3:
             dt = time.monotonic() - t0
             if interval - dt > 0:
                 time.sleep(interval - dt)
+
+    # --------------------------------------------------------------- camera
+    @property
+    def camera_url(self):
+        """RTSP URL of the robot camera (open with ffmpeg/VLC/OpenCV)."""
+        return "rtsp://%s:%d%s" % (self.robot_ip, P.CAMERA_RTSP_PORT,
+                                   P.CAMERA_RTSP_PATH)
+
+    def _send_app(self, code, value, repeats=3, interval=0.15):
+        """Send AppSimpleCMD frames to the robot's app-service port."""
+        with self._lock:
+            if not self._connected:
+                raise MotionError("not connected - call connect() first")
+        sent = 0
+        for _ in range(max(1, repeats)):
+            try:
+                self._cmd_sock.sendto(
+                    struct.pack("<III", code & 0xFFFFFFFF, value & 0xFFFFFFFF, 0),
+                    (self.robot_ip, self.camera_port))
+                sent += 1
+            except OSError:
+                pass
+            time.sleep(interval)
+        return sent
+
+    def camera_on(self, repeats=3):
+        """Start the robot's camera services (then stream appears on camera_url)."""
+        n = self._send_app(P.FRAME_CAMERA_ON, P.CAMERA_VALUE_ON, repeats)
+        return {"ok": n > 0, "sent": n, "url": self.camera_url}
+
+    def camera_off(self, repeats=2):
+        """Stop the robot's camera services."""
+        n = self._send_app(P.FRAME_CAMERA_OFF, 0, repeats)
+        return {"ok": n > 0, "sent": n}
+
+    def camera_state(self, timeout=2.0):
+        """Query the camera/AI service state (0x2101210D).
+        Returns {"active": bool|None, "reply": hex|None}."""
+        with self._lock:
+            if not self._connected:
+                raise MotionError("not connected - call connect() first")
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.bind((self.bind_state, 0))
+            s.settimeout(timeout)
+            s.sendto(struct.pack("<III", P.FRAME_CAMERA_QUERY, 0, 0),
+                     (self.robot_ip, self.camera_port))
+            data, _ = s.recvfrom(4096)
+            code, value, _t = struct.unpack_from("<III", data, 0)
+            return {"active": value == 0x11, "reply": "0x%08X value=0x%X" % (code, value)}
+        except socket.timeout:
+            return {"active": None, "reply": None}
+        except OSError as exc:
+            return {"active": None, "reply": "err: %s" % exc}
+        finally:
+            s.close()
 
     # --------------------------------------------------------------- status
     def state(self):
