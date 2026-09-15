@@ -246,12 +246,12 @@
     },
     "recover_left": {
       "enabled": true,
-      "note": "roll the robot over from its back (uses official Turn Over 0x21010205; left/right variants need official-app capture)",
+      "note": "recover from upside down - stand toggle (0x21010202, proved to right the robot)",
       "group": "recovery",
       "icon": "\u21ba",
       "label": "Recover left",
       "frame": {
-        "code": "0x21010205",
+        "code": "0x21010202",
         "type": 0,
         "value": 0
       },
@@ -259,12 +259,12 @@
     },
     "recover_right": {
       "enabled": true,
-      "note": "roll the robot over from its back (uses official Turn Over 0x21010205; left/right variants need official-app capture)",
+      "note": "recover from upside down - stand toggle (0x21010202, proved to right the robot)",
       "group": "recovery",
       "icon": "\u21bb",
       "label": "Recover right",
       "frame": {
-        "code": "0x21010205",
+        "code": "0x21010202",
         "type": 0,
         "value": 0
       },
