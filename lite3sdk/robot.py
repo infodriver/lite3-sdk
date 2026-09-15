@@ -300,25 +300,75 @@ class Lite3:
         """Official 'hello' pose (0x21010506), which plays from the SITTING
         posture: sit first if needed, then re-send the pose at ~1 Hz. Blocking;
         aborts early if estop() is called."""
+        return self.action("hello")
+
+    # ------------------------------------------------------------- actions
+    @staticmethod
+    def list_actions():
+        """All named actions with their codes/notes (same catalog as the app)."""
+        return {k: dict(v) for k, v in P.ACTIONS.items()}
+
+    def action(self, name):
+        """Play any catalog action by name (see list_actions()).
+
+        Posture-aware like the app: sit/stand first when needed (and force it
+        for actions that require a specific pose), then re-send the action at
+        ~1 Hz; mode/gait switches are single-shot. Blocking, E-stop aborts.
+        """
+        spec = P.ACTIONS.get(name)
+        if spec is None:
+            raise ValueError("unknown action '%s' (see list_actions())" % name)
         self._require_ready()
-        if self.posture != "sit":
-            self._send_posture("sit")
-            end = time.monotonic() + 2.2
-            while time.monotonic() < end:
-                if self._estop:
-                    return
-                time.sleep(0.05)
-        time.sleep(0.6)
-        frame = P.build_frame(P.FRAME_HELLO)
+        if spec.get("toggle"):
+            return self._send_posture("stand" if name == "stand_up" else "sit")
+        post = spec.get("posture")
+        if post:
+            cur = self.posture
+            if cur is None and spec.get("force"):
+                self._send_posture(post)
+                self._settle(2.4)
+            elif cur is not None and cur != post:
+                self._send_posture(post)
+                self._settle(2.4)
+            if self._estop:
+                return False
+            self._settle(0.4)
+        frame = P.build_frame(spec["code"])
+        if spec.get("once"):
+            self._send(frame)
+            return True
         for _ in range(3):
             if self._estop:
-                return
+                return False
             self._send(frame)
-            end = time.monotonic() + 1.0
-            while time.monotonic() < end:
-                if self._estop:
-                    return
-                time.sleep(0.05)
+            if not self._settle(1.0):
+                return False
+        return True
+
+    def _settle(self, seconds):
+        """Sleep while remaining cancellable by estop(); False if cancelled."""
+        end = time.monotonic() + seconds
+        while time.monotonic() < end:
+            if self._estop:
+                return False
+            time.sleep(0.05)
+        return True
+
+    # --- convenience wrappers: dog.dance(), dog.backflip(), ... ---
+    def dance(self):        return self.action("dance")
+    def twist(self):        return self.action("twist")
+    def twist_jump(self):   return self.action("twist_jump")
+    def turn_over(self):    return self.action("turn_over")
+    def backflip(self):     return self.action("backflip")
+    def long_jump(self):    return self.action("long_jump")
+    def recover_left(self):  return self.action("recover_left")
+    def recover_right(self): return self.action("recover_right")
+    def mode_manual(self):  return self.action("mode_manual")
+    def mode_move(self):    return self.action("mode_move")
+    def gait_slow(self):    return self.action("gait_slow")
+    def gait_medium(self):  return self.action("gait_medium")
+    def gait_fast(self):    return self.action("gait_fast")
+    def gait_crawl(self):   return self.action("gait_crawl")
 
     def send_raw(self, code, typ=0, value=0, payload=None, repeats=1, interval=0.0):
         """Send one raw frame (see protocol.build_frame). Burst it with

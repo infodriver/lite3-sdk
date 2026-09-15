@@ -100,6 +100,16 @@ def cmd_camera(dog, args):
         print("stream:", dog.camera_url)
 
 
+def cmd_action(dog, args):
+    ok = dog.action(args.name)
+    print("action '%s' -> %s" % (args.name, "done" if ok is not False else "cancelled"))
+
+
+def cmd_actions(dog, args):
+    for name, spec in sorted(dog.list_actions().items()):
+        print("%-14s 0x%08X  %s" % (name, spec["code"], spec.get("label", "")))
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(
         prog="lite3sdk", description="DeepRobotics Jueying Lite3 control SDK CLI",
@@ -128,7 +138,7 @@ def main(argv=None):
     p.add_argument("--ms", type=int, default=None)
     p.set_defaults(fn=cmd_sit)
 
-    p = sub.add_parser("hello", help="stand up + friendly wiggle")
+    p = sub.add_parser("hello", help="official hello pose (plays from sitting)")
     p.set_defaults(fn=cmd_hello)
 
     p = sub.add_parser("drive", help="send a velocity for N seconds then stop")
@@ -160,6 +170,21 @@ def main(argv=None):
     p = sub.add_parser("camera", help="camera services: on | off | state")
     p.add_argument("action", choices=["on", "off", "state"])
     p.set_defaults(fn=cmd_camera)
+
+    p = sub.add_parser("actions", help="list every catalog action (same as the app)")
+    p.set_defaults(fn=cmd_actions)
+
+    p = sub.add_parser("action", help="play any catalog action by name")
+    p.add_argument("name")
+    p.set_defaults(fn=cmd_action)
+
+    # one shortcut subcommand per action (dance, backflip, ...)
+    from .protocol import ACTIONS as _ACTIONS
+    for _name, _spec in sorted(_ACTIONS.items()):
+        if _name in ("stand_up", "sit_down", "hello"):
+            continue                      # already have stand/sit/hello subcommands
+        sp = sub.add_parser(_name, help="%s (0x%08X)" % (_spec.get("label", _name), _spec["code"]))
+        sp.set_defaults(fn=cmd_action, name=_name)
 
     args = ap.parse_args(argv)
     listen = args.cmd == "status"  # only status needs the telemetry socket

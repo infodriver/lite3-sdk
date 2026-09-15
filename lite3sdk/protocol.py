@@ -178,3 +178,42 @@ class Frame:
 
     def __repr__(self):
         return "Frame(0x%08X type=%d value=%d)" % (self.code, self.typ, self.value)
+
+
+# ---------------------------------------------------------------- actions
+# Full action catalog (same set as the Lite3 Pilot web console's buttons).
+#   posture: required start pose ('stand'/'sit'/None)
+#   force:   apply the posture step even when the tracked state is unknown
+#   once:    single-shot switch (modes/gaits) instead of a 3x 1 Hz replay
+ACTIONS = {
+    "stand_up":     {"code": FRAME_STAND_SIT, "posture": None,    "toggle": True,
+                     "label": "Stand (posture toggle)"},
+    "sit_down":     {"code": FRAME_STAND_SIT, "posture": None,    "toggle": True,
+                     "label": "Sit (posture toggle)"},
+    "hello":        {"code": FRAME_HELLO,     "posture": "sit",   "force": True,
+                     "label": "Hello pose"},
+    "dance":        {"code": 0x2101030C,      "posture": "stand",
+                     "label": "Dance / moonwalk"},
+    "twist":        {"code": 0x21010204,      "posture": "stand",
+                     "label": "Twist"},
+    "twist_jump":   {"code": 0x2101020D,      "posture": "stand",
+                     "label": "Twist jump"},
+    "turn_over":    {"code": 0x21010205,      "posture": "sit",   "force": True,
+                     "label": "Turn over (rolls onto back)"},
+    "backflip":     {"code": 0x21010502,      "posture": "sit",   "force": True,
+                     "label": "Backflip"},
+    "long_jump":    {"code": 0x2101050B,      "posture": "sit",   "force": True,
+                     "label": "Long jump"},
+    "recover_left":  {"code": 0x21010205,     "posture": None,
+                      "label": "Recover from back (left roll)"},
+    "recover_right": {"code": 0x21010205,     "posture": None,
+                      "label": "Recover from back (right roll)"},
+    "mode_manual":  {"code": 0x21010C02,      "once": True,
+                     "label": "Mode: manual/remote"},
+    "mode_move":    {"code": 0x21010D06,      "once": True,
+                     "label": "Mode: move"},
+    "gait_slow":    {"code": 0x21010300,      "once": True, "label": "Gait: slow"},
+    "gait_medium":  {"code": 0x21010307,      "once": True, "label": "Gait: medium"},
+    "gait_fast":    {"code": 0x21010303,      "once": True, "label": "Gait: fast"},
+    "gait_crawl":   {"code": 0x21010406,      "once": True, "label": "Gait: crawl"},
+}

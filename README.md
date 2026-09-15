@@ -133,3 +133,38 @@ python3 server.py --port 8123          # then open http://localhost:8123
 ```
 
 Everything is zero-dependency Python 3 stdlib (ffmpeg only needed for RTSP sources).
+
+## Actions (same catalog as the web console)
+
+```python
+dog.action("dance")        # or any name from dog.list_actions()
+dog.turn_over()            # convenience wrappers exist for every action
+dog.backflip(); dog.long_jump(); dog.twist(); dog.twist_jump()
+dog.recover_left(); dog.recover_right()          # roll back from upside-down
+dog.gait_slow(); dog.gait_medium(); dog.gait_fast(); dog.gait_crawl()
+dog.mode_manual(); dog.mode_move()
+```
+
+| Action | Code | Needs |
+|---|---|---|
+| `stand_up` / `sit_down` | `0x21010202` | posture toggle (one code for both) |
+| `hello` | `0x21010506` | sitting (auto) |
+| `dance` (moonwalk) | `0x2101030C` | standing |
+| `twist` / `twist_jump` | `0x21010204` / `0x2101020D` | standing |
+| `turn_over` | `0x21010205` | sitting (auto) - rolls onto back |
+| `backflip` / `long_jump` | `0x21010502` / `0x2101050B` | sitting (auto) |
+| `recover_left` / `recover_right` | `0x21010205` | from back |
+| gaits: `gait_slow/medium/fast/crawl` | `0x21010300/307/303/406` | single-shot switch |
+| modes: `mode_manual` / `mode_move` | `0x21010C02` / `0x21010D06` | single-shot switch |
+
+Posture handling is automatic (the dog is sat/stood first when the action needs a
+specific pose and the state is known or forced), actions replay at ~1 Hz, and
+E-stop cancels any action mid-play.
+
+CLI: `python3 -m lite3sdk.cli actions` lists them; every action also has its own
+subcommand (`... cli dance`, `... cli turn_over`, `... cli gait_fast`).
+
+> Codes marked "sitting"/standing come from DeepRobotics' repos and community
+> tables; `hello`, `dance`, `stand/sit` and the velocity/telemetry paths are
+> live-verified. If an action is ignored by your firmware, capture the real code
+> from the official remote (`app/tools/retroid_listen.py`).
