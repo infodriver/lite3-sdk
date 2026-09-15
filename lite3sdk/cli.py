@@ -194,12 +194,15 @@ def main(argv=None):
     p.add_argument("name")
     p.set_defaults(fn=cmd_action)
 
-    # one shortcut subcommand per action (dance, backflip, ...)
+    # one shortcut subcommand per action (dance, backflip, turn_over, turn-over, ...)
     from .protocol import ACTIONS as _ACTIONS
     for _name, _spec in sorted(_ACTIONS.items()):
         if _name in ("stand_up", "sit_down", "hello"):
             continue                      # already have stand/sit/hello subcommands
-        sp = sub.add_parser(_name, help="%s (0x%08X)" % (_spec.get("label", _name), _spec["code"]))
+        sp = sub.add_parser(
+            _name,
+            aliases=[_name.replace("_", "-")],   # e.g. 'turn-over' works too
+            help="%s (0x%08X)" % (_spec.get("label", _name), _spec["code"]))
         sp.set_defaults(fn=cmd_action, name=_name)
 
     args = ap.parse_args(argv)
