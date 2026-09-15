@@ -188,10 +188,10 @@ class Frame:
 #   force:   apply the posture step even when the tracked state is unknown
 #   once:    single-shot switch (modes/gaits) instead of a 3x 1 Hz replay
 ACTIONS = {
-    # --- Recovery (from upside down) ---
-    "recover_left":  {"code": 0x21010205,      "group": "recovery", "icon": "↺",
+    # --- Recovery (from upside down) - stand toggle rights the robot (proved) ---
+    "recover_left":  {"code": FRAME_STAND_SIT, "group": "recovery", "icon": "↺",
                       "label": "Recover left", "posture": None},
-    "recover_right": {"code": 0x21010205,      "group": "recovery", "icon": "↻",
+    "recover_right": {"code": FRAME_STAND_SIT, "group": "recovery", "icon": "↻",
                       "label": "Recover right", "posture": None},
     # --- Poses & actions ---
     "twist":        {"code": 0x21010204,      "group": "action", "icon": "🌀",

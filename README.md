@@ -147,7 +147,7 @@ dog.stand(); dog.sit(); dog.hello(); dog.turn_over()
 
 | Recovery (from upside down) | | |
 |---|---|---|
-| ↺ `recover_left()` | ↻ `recover_right()` | `0x21010205` |
+| ↺ `recover_left()` | ↻ `recover_right()` | `0x21010202` (stand toggle - rights the robot) |
 
 | Poses & actions | code | needs |
 |---|---|---|
