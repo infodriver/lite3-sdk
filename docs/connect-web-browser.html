@@ -1,0 +1,63 @@
+<html><head><meta charset="utf-8"><title>Lite3 — operate from a web browser</title></head>
+<body>
+<h1>DeepRobotics Jueying Lite3 — Operating from a web browser</h1>
+<p>No software installation is required on the operating device (phone, tablet or laptop). The device only needs to be on the <b>same network as the console computer</b>: the robot's Wi-Fi (192.168.2.x) or the same LAN (192.168.1.x).</p>
+
+<h2>1. Requirements</h2>
+<ul>
+  <li>The console computer is powered on, on the robot's Wi-Fi or on the same LAN, and the Lite3 Pilot console is running (it serves the web interface on port <b>8123</b>).</li>
+  <li>Your device (phone/tablet/laptop) is:
+    <ul>
+      <li>on the <b>robot's Wi-Fi</b> (the hotspot from the robot's QR label), or</li>
+      <li>on the <b>same LAN</b> as the console computer.</li>
+    </ul>
+  </li>
+  <li>No web server, no VPN, no internet access is needed — everything is local.</li>
+</ul>
+
+<h2>2. Find the console address</h2>
+<ol>
+  <li>On the console computer, the address to use is its own IP on the network that your device shares:
+    <ul>
+      <li>on the robot's Wi-Fi: e.g. <span class="mono">192.168.2.22</span></li>
+      <li>on the same LAN: e.g. <span class="mono">192.168.1.210</span></li>
+    </ul>
+  </li>
+  <li>Console URL format: <b>http://&lt;console-computer-IP&gt;:8123</b><br/>
+      Example: <span class="mono">http://192.168.2.22:8123</span></li>
+</ol>
+
+<h2>3. Open and connect</h2>
+<ol>
+  <li>Open that URL in the browser on your device.</li>
+  <li>Check the robot IP shown under <b>Advanced → Robot IP</b>: it must be the motion host of the network you are on:
+    <ul>
+      <li>robot Wi-Fi: <b>192.168.2.1</b></li>
+      <li>ethernet/LAN: <b>192.168.1.120</b></li>
+    </ul>
+  </li>
+  <li>Press <b>🔌 Connect</b>. Wait for <b>✅ Connected</b> (the status line also shows the ping result).</li>
+  <li>The camera pane opens automatically (when the robot's camera service is running).</li>
+  <li>Operating controls: <b>🐕 STAND / 🪑 SIT</b>, the action buttons (dance, hello, flips&hellip;), the two joysticks (left: forward/back + turn, right: slide), <b>STOP</b> and <b>E-STOP</b>.</li>
+</ol>
+
+<h2>4. Before you move the robot</h2>
+<ul>
+  <li>Clear the area (about 5 m) and keep the physical E-stop within reach — it always overrides the software.</li>
+  <li>The robot must be <b>standing</b>: driving commands are ignored while it is sitting or lying down.</li>
+  <li>If the header shows <b>E-STOP</b> latched, press <b>⟲ Return</b> to re-arm. While latched, no command is sent.</li>
+  <li>Both joysticks are spring-centred: release = stop. Holding a position keeps driving until released.</li>
+</ul>
+
+<h2>5. Troubleshooting</h2>
+<ul>
+  <li><b>The page does not open:</b> your device is not on the same network as the console computer, or the IP is wrong. Re-join the robot Wi-Fi / LAN and re-check the IP.</li>
+  <li><b>Page opens but not connected:</b> verify Advanced → Robot IP matches the network (2.1 on robot Wi-Fi, 1.120 on LAN), and that the robot is powered and awake.</li>
+  <li><b>Buttons are greyed until connected:</b> expected. They enable automatically on connect.</li>
+  <li><b>Commands seem to do nothing:</b> robot not standing, or software E-stop latched (press ⟲ Return). Note that UDP gives no acknowledgement — confirm motion visually.</li>
+  <li><b>No camera:</b> the robot's camera service must be running on the robot. The console retries automatically every ~8 s.</li>
+  <li><b>No battery / IMU readout:</b> requires a one-time setting on the robot (telemetry target in <span class="mono">~/jy_exe/conf/network.toml</span>). Driving works without it.</li>
+</ul>
+
+<p><i>Security note:</i> the console is a local service without authentication — keep it on trusted, local networks and close the browser session when finished.</p>
+</body></html>
