@@ -1,0 +1,114 @@
+<html><head><meta charset="utf-8"><title>Lite3 console — commands, 2-joystick movement, camera setup</title></head>
+<body>
+<h1>Lite3 Pilot console — setup guide</h1>
+<p>Covers: <b>command buttons</b>, <b>two-joystick driving</b> and <b>camera setup</b>. Applies to the web console (port 8123) and its <span class="mono">config.json</span>.</p>
+
+<h1>1. Commands (buttons)</h1>
+
+<h2>1.1 How the buttons are organised</h2>
+<p>Buttons are grouped exactly as configured:</p>
+<ul>
+  <li><b>Top row:</b> 🐕 STAND · 🪑 SIT · 👋 HELLO · 🕺 DANCE · 🔄 TURN OVER (built-in pose buttons)</li>
+  <li><b>Recovery (from upside down):</b> ↺ Recover left · ↻ Recover right</li>
+  <li><b>Poses &amp; actions:</b> 🌀 Twist · 🌪️ Twist jump · 🤸 Backflip · 🦘 Long jump (plus Hello/Dance/Turn over)</li>
+  <li><b>Modes:</b> 🎮 Manual mode · 🕹️ Move mode</li>
+  <li><b>Gaits:</b> 🐢 Slow · 🚶 Medium · ⚡ Fast · 🐛 Crawl</li>
+</ul>
+
+<h2>1.2 The posture rule (very important)</h2>
+<ul>
+  <li>STAND and SIT are <b>one and the same command</b> (0x21010202) — a <b>toggle</b>. Sending it while already standing makes the robot sit, and vice versa.</li>
+  <li>Actions that need a specific pose declare it (<span class="mono">"posture": "sit"</span> or <span class="mono">"stand"</span>). The console only re-poses when it knows the state is wrong; with <span class="mono">"force_posture": true</span> it re-poses even when the state is unknown (used for rolls/jumps).</li>
+  <li>The posture tracker resets on restart, so after starting the app: put the robot in the pose you want (or let the action's own pose step do it) and press the button.</li>
+  <li>Velocity/driving commands are only honoured while the robot is <b>standing</b>; while sitting they are ignored silently.</li>
+</ul>
+
+<h2>1.3 Adding or editing a command (config.json)</h2>
+<p>Each button is one entry under <span class="mono">"actions"</span>. Example:</p>
+<pre>
+"twist_jump": {
+  "enabled": true,
+  "note": "twist jump (0x2101020D - standing, moves dog)",
+  "posture": "stand",
+  "force_posture": true,
+  "replay": "slow",
+  "group": "action",
+  "icon": "🌪️",
+  "label": "Twist jump",
+  "frame": { "code": "0x2101020D", "type": 0, "value": 0 }
+}
+</pre>
+<ul>
+  <li><span class="mono">frame.code</span> — the 32-bit command (hex). <span class="mono">type</span> 0 = simple frame; <span class="mono">value</span> — integer parameter (velocity frames use payload instead).</li>
+  <li><span class="mono">posture</span> / <span class="mono">force_posture</span> — pose handling as above. Omit for actions valid in any pose.</li>
+  <li><span class="mono">replay: "slow"</span> — sends the frame three times at ~1 Hz (used for poses/rolls). <span class="mono">"once": true</span> — a single frame (used for mode/gait switches). Default — short burst.</li>
+  <li><span class="mono">group</span> — which block the button appears in (<span class="mono">recovery</span> / <span class="mono">action</span> / <span class="mono">mode</span> / <span class="mono">gait</span>). <span class="mono">icon</span> + <span class="mono">label</span> — button face; <span class="mono">note</span> — tooltip.</li>
+  <li>After editing: restart the console (or reload the page) — buttons appear automatically. Disable a button with <span class="mono">"enabled": false</span>.</li>
+</ul>
+
+<h2>1.4 Finding the right code for a new command</h2>
+<ol>
+  <li><b>Probe:</b> Advanced → raw frames — send a frame once and watch the robot.</li>
+  <li><b>Capture from the official remote:</b> run <span class="mono">tools/retroid_listen.py</span> on the console computer, point the RETROID controlapp at <span class="mono">&lt;console IP&gt;:12121</span>, press the button there, and read the exact frame.</li>
+  <li><b>Safety:</b> test new poses on a soft surface with clear space; keep the physical E-stop in reach. E-STOP in the console cancels any action mid-play and blocks all commands until ⟲ Return.</li>
+</ol>
+
+<h1>2. Two-joystick movement</h1>
+
+<h2>2.1 Layout</h2>
+<ul>
+  <li><b>Left stick</b> — up/down = forward/back · left/right = turn.</li>
+  <li><b>Right stick</b> — left/right = slide (side-walk) · up/down = forward/back (if both sticks push forward, the stronger one wins).</li>
+  <li>Diagonals combine axes (e.g. forward + slide, or forward + turn).</li>
+  <li>Both sticks are <b>spring-centred</b>: release = knob returns to centre and the robot stops (a brake frame is sent immediately).</li>
+</ul>
+
+<h2>2.2 Stopping</h2>
+<ul>
+  <li>Release either stick (or return it to centre) → stop.</li>
+  <li><b>STOP</b> button → official brake frames. <b>E-STOP</b> → latches until ⟲ Return.</li>
+  <li>Switching browser tab / losing window focus also stops the robot (safety).</li>
+</ul>
+
+<h2>2.3 Sensitivity and speed (Advanced)</h2>
+<ul>
+  <li><b>Stick curve</b> — Linear / Soft (default) / Soft+: higher curve = finer control near the centre.</li>
+  <li><b>Speed scale</b> — 50 % / 75 % / 100 % / 150 %: multiplies the configured maxima (defaults: 0.5 m/s forward, 0.4 m/s lateral, 0.8 rad/s turn).</li>
+  <li><b>Forward / Turn / Lateral sign</b> — flips each axis if a direction feels reversed; applied instantly.</li>
+  <li><b>Joystick mode</b> — <i>Velocity frames</i> (proven) or <i>Retroid / official SDK</i> (sends the same 42-byte frames as the physical remote to UDP 12121).</li>
+</ul>
+
+<h2>2.4 Keyboard (alternative to the sticks)</h2>
+<ul>
+  <li><b>W / S</b> (or ↑/↓) — forward / back · <b>A / D</b> (or ←/→) — turn · <b>Space</b> — E-stop (hold) · leaving the keys stops the robot.</li>
+</ul>
+
+<h1>3. Camera setup</h1>
+
+<h2>3.1 How the video path works</h2>
+<ul>
+  <li>The console asks the robot to start its camera services (command 0x21012109, value 0x40, to UDP 43899) and reads the stream at <span class="mono">rtsp://&lt;robot IP&gt;:8554/test</span>, re-publishing it to the browser as MJPEG.</li>
+  <li>Feed opens automatically after connecting and is kept open by a watchdog that retries every ~8 s (re-sending the start command, reconnecting the stream).</li>
+</ul>
+
+<h2>3.2 If the robot publishes nothing (RTSP 404 / no video)</h2>
+<ol>
+  <li>Confirm the robot is on and reachable: <span class="mono">ping 192.168.2.1</span> (robot Wi-Fi) or <span class="mono">192.168.1.120</span> (LAN).</li>
+  <li>Check the RTSP port is open and whether the stream name exists:<br/>
+      <span class="mono">nc -z -w2 192.168.2.1 8554</span><br/>
+      <span class="mono">ffprobe -v error -rtsp_transport tcp -show_entries format=format_name -of csv=p=0 rtsp://192.168.2.1:8554/test</span><br/>
+      A working stream prints <span class="mono">rtsp</span>; "404 Not Found" means the camera service on the robot is not publishing.</li>
+  <li>If the port is open but the stream is absent, the robot's camera service must be started on the robot (its own service/tooling); power-cycling the robot usually restores it.</li>
+</ol>
+
+<h2>3.3 Tuning quality for a stable feed (Advanced → Camera stream)</h2>
+<ul>
+  <li><b>FPS</b> — 4&ndash;6 fps is plenty for driving (lower = lighter).</li>
+  <li><b>Scale</b> — e.g. <span class="mono">480:-1</span> (default, light) or <span class="mono">640:-1</span> (sharper, heavier); <span class="mono">320:-1</span> for the lowest bandwidth.</li>
+  <li><b>Quality</b> — MJPEG <span class="mono">-q:v</span>: 2 = best/largest, 18 = smallest; default 11 balances both.</li>
+  <li><b>Apply &amp; restart camera</b> — applies immediately; <b>Camera off</b> stops the feed.</li>
+  <li>Rule of thumb: if the picture stutters on the robot's Wi-Fi, lower FPS first, then scale, then raise the quality number.</li>
+</ul>
+
+<p><i>Ports:</i> commands 43893 (UDP) &middot; telemetry 43897 (UDP) &middot; camera control 43899 (UDP) &middot; RTSP 8554 (TCP, /test) &middot; remote 12121 (UDP) &middot; console 8123 (HTTP).</p>
+</body></html>

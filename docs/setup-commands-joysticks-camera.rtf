@@ -1,0 +1,243 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2907
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\fmodern\fcharset0 Courier;
+\f3\froman\fcharset0 Times-Italic;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\deftab720
+\pard\pardeftab720\sa321\pardirnatural\partightenfactor0
+
+\f0\b\fs48 \cf0 \expnd0\expndtw0\kerning0
+Lite3 Pilot console \'97 setup guide\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 Covers: 
+\f0\b command buttons
+\f1\b0 , 
+\f0\b two-joystick driving
+\f1\b0  and 
+\f0\b camera setup
+\f1\b0 . Applies to the web console (port 8123) and its config.json.\
+\pard\pardeftab720\sa321\pardirnatural\partightenfactor0
+
+\f0\b\fs48 \cf0 1. Commands (buttons)\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\fs36 \cf0 1.1 How the buttons are organised\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 Buttons are grouped exactly as configured:\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f0\b \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Top row:
+\f1\b0  \uc0\u55357 \u56341  STAND \'b7 \u55358 \u56977  SIT \'b7 \u55357 \u56395  HELLO \'b7 \u55357 \u56698  DANCE \'b7 \u55357 \u56580  TURN OVER (built-in pose buttons)\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Recovery (from upside down):
+\f1\b0  \uc0\u8634  Recover left \'b7 \u8635  Recover right\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Poses & actions:
+\f1\b0  \uc0\u55356 \u57088  Twist \'b7 \u55356 \u57130 \u65039  Twist jump \'b7 \u55358 \u56632  Backflip \'b7 \u55358 \u56728  Long jump (plus Hello/Dance/Turn over)\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Modes:
+\f1\b0  \uc0\u55356 \u57262  Manual mode \'b7 \u55357 \u56697 \u65039  Move mode\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Gaits:
+\f1\b0  \uc0\u55357 \u56354  Slow \'b7 \u55357 \u57014  Medium \'b7 \u9889  Fast \'b7 \u55357 \u56347  Crawl\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1.2 The posture rule (very important)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+STAND and SIT are 
+\f0\b one and the same command
+\f1\b0  (0x21010202) \'97 a 
+\f0\b toggle
+\f1\b0 . Sending it while already standing makes the robot sit, and vice versa.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Actions that need a specific pose declare it ("posture": "sit" or "stand"). The console only re-poses when it knows the state is wrong; with "force_posture": true it re-poses even when the state is unknown (used for rolls/jumps).\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+The posture tracker resets on restart, so after starting the app: put the robot in the pose you want (or let the action's own pose step do it) and press the button.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Velocity/driving commands are only honoured while the robot is 
+\f0\b standing
+\f1\b0 ; while sitting they are ignored silently.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1.3 Adding or editing a command (config.json)\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 Each button is one entry under "actions". Example:\
+\pard\pardeftab720\pardirnatural\partightenfactor0
+
+\f2\fs26 \cf0 "twist_jump": \{\
+  "enabled": true,\
+  "note": "twist jump (0x2101020D - standing, moves dog)",\
+  "posture": "stand",\
+  "force_posture": true,\
+  "replay": "slow",\
+  "group": "action",\
+  "icon": "\uc0\u55356 \u57130 \u65039 ",\
+  "label": "Twist jump",\
+  "frame": \{ "code": "0x2101020D", "type": 0, "value": 0 \}\
+\}\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+frame.code \'97 the 32-bit command (hex). type 0 = simple frame; value \'97 integer parameter (velocity frames use payload instead).\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+posture / force_posture \'97 pose handling as above. Omit for actions valid in any pose.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+replay: "slow" \'97 sends the frame three times at ~1 Hz (used for poses/rolls). "once": true \'97 a single frame (used for mode/gait switches). Default \'97 short burst.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+group \'97 which block the button appears in (recovery / action / mode / gait). icon + label \'97 button face; note \'97 tooltip.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+After editing: restart the console (or reload the page) \'97 buttons appear automatically. Disable a button with "enabled": false.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1.4 Finding the right code for a new command\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	1	\expnd0\expndtw0\kerning0
+Probe:
+\f1\b0  Advanced \uc0\u8594  raw frames \'97 send a frame once and watch the robot.\
+
+\f0\b \kerning1\expnd0\expndtw0 	2	\expnd0\expndtw0\kerning0
+Capture from the official remote:
+\f1\b0  run tools/retroid_listen.py on the console computer, point the RETROID controlapp at <console IP>:12121, press the button there, and read the exact frame.\
+
+\f0\b \kerning1\expnd0\expndtw0 	3	\expnd0\expndtw0\kerning0
+Safety:
+\f1\b0  test new poses on a soft surface with clear space; keep the physical E-stop in reach. E-STOP in the console cancels any action mid-play and blocks all commands until \uc0\u10226  Return.\
+\pard\pardeftab720\sa321\pardirnatural\partightenfactor0
+
+\f0\b\fs48 \cf0 2. Two-joystick movement\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\fs36 \cf0 2.1 Layout\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Left stick
+\f1\b0  \'97 up/down = forward/back \'b7 left/right = turn.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Right stick
+\f1\b0  \'97 left/right = slide (side-walk) \'b7 up/down = forward/back (if both sticks push forward, the stronger one wins).\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+\cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Diagonals combine axes (e.g. forward + slide, or forward + turn).\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Both sticks are 
+\f0\b spring-centred
+\f1\b0 : release = knob returns to centre and the robot stops (a brake frame is sent immediately).\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.2 Stopping\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Release either stick (or return it to centre) \uc0\u8594  stop.\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f0\b \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+STOP
+\f1\b0  button \uc0\u8594  official brake frames. 
+\f0\b E-STOP
+\f1\b0  \uc0\u8594  latches until \u10226  Return.\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+\cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Switching browser tab / losing window focus also stops the robot (safety).\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.3 Sensitivity and speed (Advanced)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Stick curve
+\f1\b0  \'97 Linear / Soft (default) / Soft+: higher curve = finer control near the centre.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Speed scale
+\f1\b0  \'97 50 % / 75 % / 100 % / 150 %: multiplies the configured maxima (defaults: 0.5 m/s forward, 0.4 m/s lateral, 0.8 rad/s turn).\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Forward / Turn / Lateral sign
+\f1\b0  \'97 flips each axis if a direction feels reversed; applied instantly.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Joystick mode
+\f1\b0  \'97 
+\f3\i Velocity frames
+\f1\i0  (proven) or 
+\f3\i Retroid / official SDK
+\f1\i0  (sends the same 42-byte frames as the physical remote to UDP 12121).\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.4 Keyboard (alternative to the sticks)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+W / S
+\f1\b0  (or \uc0\u8593 /\u8595 ) \'97 forward / back \'b7 
+\f0\b A / D
+\f1\b0  (or \uc0\u8592 /\u8594 ) \'97 turn \'b7 
+\f0\b Space
+\f1\b0  \'97 E-stop (hold) \'b7 leaving the keys stops the robot.\
+\pard\pardeftab720\sa321\pardirnatural\partightenfactor0
+
+\f0\b\fs48 \cf0 3. Camera setup\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\fs36 \cf0 3.1 How the video path works\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+The console asks the robot to start its camera services (command 0x21012109, value 0x40, to UDP 43899) and reads the stream at rtsp://<robot IP>:8554/test, re-publishing it to the browser as MJPEG.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Feed opens automatically after connecting and is kept open by a watchdog that retries every ~8 s (re-sending the start command, reconnecting the stream).\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 3.2 If the robot publishes nothing (RTSP 404 / no video)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	1	\expnd0\expndtw0\kerning0
+Confirm the robot is on and reachable: ping 192.168.2.1 (robot Wi-Fi) or 192.168.1.120 (LAN).\
+\kerning1\expnd0\expndtw0 	2	\expnd0\expndtw0\kerning0
+Check the RTSP port is open and whether the stream name exists:\uc0\u8232 nc -z -w2 192.168.2.1 8554\u8232 ffprobe -v error -rtsp_transport tcp -show_entries format=format_name -of csv=p=0 rtsp://192.168.2.1:8554/test\u8232 A working stream prints rtsp; "404 Not Found" means the camera service on the robot is not publishing.\
+\kerning1\expnd0\expndtw0 	3	\expnd0\expndtw0\kerning0
+If the port is open but the stream is absent, the robot's camera service must be started on the robot (its own service/tooling); power-cycling the robot usually restores it.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 3.3 Tuning quality for a stable feed (Advanced \uc0\u8594  Camera stream)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+FPS
+\f1\b0  \'97 4\'966 fps is plenty for driving (lower = lighter).\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Scale
+\f1\b0  \'97 e.g. 480:-1 (default, light) or 640:-1 (sharper, heavier); 320:-1 for the lowest bandwidth.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Quality
+\f1\b0  \'97 MJPEG -q:v: 2 = best/largest, 18 = smallest; default 11 balances both.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Apply & restart camera
+\f1\b0  \'97 applies immediately; 
+\f0\b Camera off
+\f1\b0  stops the feed.\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+\cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Rule of thumb: if the picture stutters on the robot's Wi-Fi, lower FPS first, then scale, then raise the quality number.\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f3\i \cf0 Ports:
+\f1\i0  commands 43893 (UDP) \'b7 telemetry 43897 (UDP) \'b7 camera control 43899 (UDP) \'b7 RTSP 8554 (TCP, /test) \'b7 remote 12121 (UDP) \'b7 console 8123 (HTTP).\
+}
