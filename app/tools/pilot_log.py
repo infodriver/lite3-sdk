@@ -37,11 +37,62 @@ import time
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))  # allow importing lite3sdk from repo root
+# allow importing lite3sdk whether this runs from the SDK repo (app/tools) or
+# from the standalone console folder (sibling ../lite3_sdk)
+for cand in (os.path.dirname(HERE),
+             os.path.normpath(os.path.join(HERE, "..", "..", "lite3_sdk"))):
+    if cand not in sys.path:
+        sys.path.insert(0, cand)
 try:
     from lite3sdk import protocol as P   # noqa: E402
+    from lite3sdk import Lite3            # noqa: E402
+    HAVE_SDK = True
 except Exception:                        # pragma: no cover
     P = None
+    HAVE_SDK = False
+
+
+def decode_frame(data):
+    """Decode one received frame.
+
+    Two families are seen on the telemetry port:
+      * high-level 0x0901 robot state (battery/IMU/gait) - via lite3sdk
+      * low-level  frames with magic 0x1105 + 16-bit code in the low half:
+          0x0F01 (value 0x55: sensor alive marker)
+          0x0F02 / 0x0F03 (12-byte payload = 3 floats, e.g. velocities)
+          0x0906 (RobotData notification; full joint data needs the vendor SDK handshake)
+    """
+    out = {"code": "0x%08X" % struct.unpack_from("<I", data, 0)[0]}
+    if P is not None:
+        st = P.parse_state(data)
+        if st:
+            out["family"] = "robot_state_0x0901"
+            out.update({k: st.get(k) for k in
+                        ("basic_state", "gait_state", "motion_state", "error_state",
+                         "battery", "charging", "rpy", "rpy_vel", "vel_body", "pos")})
+            return out
+        j = P.parse_joint_state(data)
+        if j:
+            out["family"] = "joints_0x0902"
+            out["joints"] = j
+            return out
+        h = P.parse_handle_state(data)
+        if h:
+            out["family"] = "handle_0x0905"
+            out["handle"] = h
+            return out
+    if len(data) >= 12:
+        code32, value, typ = struct.unpack_from("<III", data, 0)
+        if (code32 >> 16) == 0x1105:
+            out["family"] = "lowlevel"
+            out["low_code"] = "0x%04X" % (code32 & 0xFFFF)
+            out["value"] = value
+            out["type"] = typ
+            payload = data[12:]
+            if len(payload) == 12:
+                x, y, z = struct.unpack("<3f", payload)
+                out["f1"], out["f2"], out["f3"] = round(x, 4), round(y, 4), round(z, 4)
+    return out
 
 META_DEFAULTS = {
     "robot_model": "DeepRobotics Jueying Lite3",
@@ -129,6 +180,7 @@ def main():
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    meta_extra = {}
     try:
         sock.bind(("0.0.0.0", args.state_port))
     except OSError as exc:
@@ -140,10 +192,18 @@ def main():
             meta_extra = {"console_disconnected_for_capture": True}
         else:
             raise
-    else:
-        meta_extra = {}
     meta.update(meta_extra)
     sock.settimeout(0.5)
+
+    # direct control socket: commands go straight to the robot on UDP 43893 so
+    # the maneuver works even while the console is disconnected for capture
+    dog = None
+    if args.maneuver and HAVE_SDK:
+        dog = Lite3(args.robot_ip, state_port=0, allow_motion_without_telemetry=True)
+        dog.connect()
+        print("direct UDP control active (", args.robot_ip, ")")
+    elif args.maneuver:
+        print("WARNING: lite3sdk not importable - maneuver will use the console API")
 
     rows, raw = [], []
     t0 = time.monotonic()
@@ -164,9 +224,14 @@ def main():
             while plan and el >= plan[0][0]:
                 _t, v, what = plan.pop(0)
                 if v is None:
-                    res = post_cmd({"type": "stop"})
+                    res = (dog.stop() if dog else post_cmd({"type": "stop"})) or {"ok": True}
                 else:
-                    res = post_cmd({"type": "velocity", "vx": v, "vy": 0, "wz": 0})
+                    if dog:
+                        dog.drive(vx=v)
+                        dog.wait(0.05)
+                        res = {"ok": True, "via": "udp"}
+                    else:
+                        res = post_cmd({"type": "velocity", "vx": v, "vy": 0, "wz": 0})
                 rows.append({"t": now_iso(), "elapsed_s": round(el, 3),
                              "kind": "command", "detail": what,
                              "cmd_vx": v if v is not None else 0, "cmd_vy": 0,
@@ -183,19 +248,7 @@ def main():
         code = struct.unpack_from("<i", data, 0)[0]
         entry = {"t": now_iso(), "elapsed_s": round(el, 3), "kind": "frame",
                  "code": "0x%04X" % code, "size": len(data)}
-        if P is not None:
-            st = P.parse_state(data) if code == 0x0901 else None
-            if st:
-                for k in ("basic_state", "gait_state", "motion_state", "error_state",
-                          "battery", "charging", "rpy", "rpy_vel", "vel_body",
-                          "pos", "ultrasound", "touch_stair", "task_state"):
-                    entry[k] = st.get(k)
-            j = P.parse_joint_state(data) if code == 0x0902 else None
-            if j:
-                entry["joints"] = j
-            h = P.parse_handle_state(data) if code == 0x0905 else None
-            if h:
-                entry["handle"] = h
+        entry.update(decode_frame(data))
         rows.append(entry)
 
     # exports
@@ -218,6 +271,12 @@ def main():
         print("      (see --print-checklist)")
     if meta.get("console_disconnected_for_capture") and not args.no_reconnect:
         print("reconnecting console:", post_json("/api/connect", {"robot_ip": args.robot_ip}))
+    if dog is not None:
+        try:
+            dog.stop()
+        except Exception:
+            pass
+        dog.close()
 
 
 if __name__ == "__main__":
