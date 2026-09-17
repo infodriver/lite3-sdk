@@ -1,0 +1,125 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2907
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\froman\fcharset0 Times-Italic;
+}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\deftab720
+\pard\pardeftab720\sa321\pardirnatural\partightenfactor0
+
+\f0\b\fs48 \cf0 \expnd0\expndtw0\kerning0
+DeepRobotics Jueying Lite3 \'97 How to connect\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 Audience: operator with the robot and a laptop. Time: ~2 minutes. No third-party software required.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1. Power and network\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	1	\expnd0\expndtw0\kerning0
+Power on the robot and let it finish booting (about 1 minute).\
+\kerning1\expnd0\expndtw0 	2	\expnd0\expndtw0\kerning0
+The robot creates its own Wi-Fi hotspot: 
+\f0\b YSC-JYML-XXXXX
+\f1\b0  (your unit's exact name is on its QR label).\
+\kerning1\expnd0\expndtw0 	3	\expnd0\expndtw0\kerning0
+On the operator laptop, join that hotspot. The password is on the robot's QR label.\
+\kerning1\expnd0\expndtw0 	4	\expnd0\expndtw0\kerning0
+You should get an address in 
+\f0\b 192.168.2.x
+\f1\b0 ; the robot's motion host is 
+\f0\b 192.168.2.1
+\f1\b0 .\
+\kerning1\expnd0\expndtw0 	5	\expnd0\expndtw0\kerning0
+Check the link: ping 192.168.2.1 should reply.\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f2\i \cf0 Ethernet alternative:
+\f1\i0  with the robot wired to the same router, the motion host is 
+\f0\b 192.168.1.120
+\f1\b0 ; set that IP where the instructions below say 192.168.2.1. Requiring internet at the same time? Stay on the wired network instead of the hotspot.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2. Connect with the web console (recommended)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	1	\expnd0\expndtw0\kerning0
+Start the console: open the 
+\f0\b Lite3 Pilot
+\f1\b0  app (or run python3 server.py --port 8123 in the app folder).\
+\kerning1\expnd0\expndtw0 	2	\expnd0\expndtw0\kerning0
+In the browser window that opens, check the header shows the robot IP (default 
+\f0\b 192.168.2.1
+\f1\b0 ; change it under 
+\f0\b Advanced \uc0\u8594  Robot IP
+\f1\b0  if needed).\
+\kerning1\expnd0\expndtw0 	3	\expnd0\expndtw0\kerning0
+Press 
+\f0\b \uc0\u55357 \u56588  Connect
+\f1\b0 . The status must show 
+\f0\b \uc0\u9989  Connected
+\f1\b0  and a live ping.\
+\kerning1\expnd0\expndtw0 	4	\expnd0\expndtw0\kerning0
+The camera opens by itself within ~10 s (if the robot's camera service is running).\
+\kerning1\expnd0\expndtw0 	5	\expnd0\expndtw0\kerning0
+Motion is enabled once connected: stand/sit, actions and the joysticks.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 3. Connect with the Python SDK (scripting)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	1	\expnd0\expndtw0\kerning0
+In a terminal: cd lite3_sdk && python3 -m lite3sdk.cli status --ip 192.168.2.1\
+\kerning1\expnd0\expndtw0 	2	\expnd0\expndtw0\kerning0
+Health check: python3 -m lite3sdk.cli stand \'97 the robot stands.\
+\kerning1\expnd0\expndtw0 	3	\expnd0\expndtw0\kerning0
+Drive: python3 -m lite3sdk.cli drive --vx 0.1 --seconds 2 (slow forward, then stops).\
+\kerning1\expnd0\expndtw0 	4	\expnd0\expndtw0\kerning0
+In Python: dog = lite3sdk.Lite3("192.168.2.1"); dog.connect(); dog.stand(); dog.drive(vx=0.1); dog.wait(2); dog.stop()\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 4. Safety before moving\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Clear the area (5 m), leash or stand the robot for first tests.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Keep the physical E-stop in reach \'97 it always overrides software.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+If the software E-stop is latched in the console, press 
+\f0\b \uc0\u10226  Return
+\f1\b0  to re-arm. It is latched by design: no motion commands are sent until then.\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f0\b \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+The robot must be standing for velocity/driving commands to be honoured.
+\f1\b0  If it is sitting/lying, motion frames are ignored silently.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 5. Troubleshooting\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Not connected / ping fails:
+\f1\b0  wrong network (must be the robot hotspot or its wired LAN), wrong IP in Advanced, or the robot is still booting.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Commands do nothing:
+\f1\b0  check the software E-stop (press \uc0\u10226  Return), confirm the robot is standing, and confirm the console shows \u9989  Connected.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+No camera:
+\f1\b0  the robot's camera service must be running on the robot; the console retries automatically every ~8 s.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+No battery / IMU readout:
+\f1\b0  one-time robot-side setting \'97 in ~/jy_exe/conf/network.toml set ip = '<laptop IP>' and restart the motion program. Motion works without it.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+UDP gives no acknowledgement
+\f1\b0  \'97 "command sent" does not prove motion; confirm visually (or with telemetry).\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f2\i \cf0 Ports used:
+\f1\i0  commands UDP 43893 \'b7 telemetry UDP 43897 \'b7 camera RTSP 8554 (/test) \'b7 remote/gamepad UDP 12121 \'b7 console HTTP 8123.\
+}

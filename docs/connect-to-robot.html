@@ -1,0 +1,51 @@
+<html><head><meta charset="utf-8"><title>Lite3 — how to connect (operator instructions)</title></head>
+<body>
+<h1>DeepRobotics Jueying Lite3 — How to connect</h1>
+<p>Audience: operator with the robot and a laptop. Time: ~2 minutes. No third-party software required.</p>
+
+<h2>1. Power and network</h2>
+<ol>
+  <li>Power on the robot and let it finish booting (about 1 minute).</li>
+  <li>The robot creates its own Wi-Fi hotspot: <b>YSC-JYML-XXXXX</b> (your unit's exact name is on its QR label).</li>
+  <li>On the operator laptop, join that hotspot. The password is on the robot's QR label.</li>
+  <li>You should get an address in <b>192.168.2.x</b>; the robot's motion host is <b>192.168.2.1</b>.</li>
+  <li>Check the link: <span class="mono">ping 192.168.2.1</span> should reply.</li>
+</ol>
+<p><i>Ethernet alternative:</i> with the robot wired to the same router, the motion host is <b>192.168.1.120</b>; set that IP where the instructions below say 192.168.2.1. Requiring internet at the same time? Stay on the wired network instead of the hotspot.</p>
+
+<h2>2. Connect with the web console (recommended)</h2>
+<ol>
+  <li>Start the console: open the <b>Lite3 Pilot</b> app (or run <span class="mono">python3 server.py --port 8123</span> in the <span class="mono">app</span> folder).</li>
+  <li>In the browser window that opens, check the header shows the robot IP (default <b>192.168.2.1</b>; change it under <b>Advanced → Robot IP</b> if needed).</li>
+  <li>Press <b>🔌 Connect</b>. The status must show <b>✅ Connected</b> and a live ping.</li>
+  <li>The camera opens by itself within ~10 s (if the robot's camera service is running).</li>
+  <li>Motion is enabled once connected: stand/sit, actions and the joysticks.</li>
+</ol>
+
+<h2>3. Connect with the Python SDK (scripting)</h2>
+<ol>
+  <li>In a terminal: <span class="mono">cd lite3_sdk &amp;&amp; python3 -m lite3sdk.cli status --ip 192.168.2.1</span></li>
+  <li>Health check: <span class="mono">python3 -m lite3sdk.cli stand</span> — the robot stands.</li>
+  <li>Drive: <span class="mono">python3 -m lite3sdk.cli drive --vx 0.1 --seconds 2</span> (slow forward, then stops).</li>
+  <li>In Python: <span class="mono">dog = lite3sdk.Lite3("192.168.2.1"); dog.connect(); dog.stand(); dog.drive(vx=0.1); dog.wait(2); dog.stop()</span></li>
+</ol>
+
+<h2>4. Safety before moving</h2>
+<ul>
+  <li>Clear the area (5 m), leash or stand the robot for first tests.</li>
+  <li>Keep the physical E-stop in reach — it always overrides software.</li>
+  <li>If the software E-stop is latched in the console, press <b>⟲ Return</b> to re-arm. It is latched by design: no motion commands are sent until then.</li>
+  <li><b>The robot must be standing for velocity/driving commands to be honoured.</b> If it is sitting/lying, motion frames are ignored silently.</li>
+</ul>
+
+<h2>5. Troubleshooting</h2>
+<ul>
+  <li><b>Not connected / ping fails:</b> wrong network (must be the robot hotspot or its wired LAN), wrong IP in Advanced, or the robot is still booting.</li>
+  <li><b>Commands do nothing:</b> check the software E-stop (press ⟲ Return), confirm the robot is standing, and confirm the console shows ✅ Connected.</li>
+  <li><b>No camera:</b> the robot's camera service must be running on the robot; the console retries automatically every ~8 s.</li>
+  <li><b>No battery / IMU readout:</b> one-time robot-side setting — in <span class="mono">~/jy_exe/conf/network.toml</span> set <span class="mono">ip = '&lt;laptop IP&gt;'</span> and restart the motion program. Motion works without it.</li>
+  <li><b>UDP gives no acknowledgement</b> — "command sent" does not prove motion; confirm visually (or with telemetry).</li>
+</ul>
+
+<p><i>Ports used:</i> commands UDP 43893 &middot; telemetry UDP 43897 &middot; camera RTSP 8554 (<span class="mono">/test</span>) &middot; remote/gamepad UDP 12121 &middot; console HTTP 8123.</p>
+</body></html>
