@@ -118,76 +118,110 @@ Safety:
 \f0\b\fs48 \cf0 2. Two-joystick movement\
 \pard\pardeftab720\sa298\pardirnatural\partightenfactor0
 
-\fs36 \cf0 2.1 Layout\
+\fs36 \cf0 2.1 Layout (exactly as in the app)\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 
 \fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-Left stick
-\f1\b0  \'97 up/down = forward/back \'b7 left/right = turn.\
+Left pad
+\f1\b0  \'97 labelled FWD \'b7 turn \uc0\u8592  \u8594  \'b7 BACK: up/down = forward/back, left/right = 
+\f0\b turn
+\f1\b0 .\
 
 \f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-Right stick
-\f1\b0  \'97 left/right = slide (side-walk) \'b7 up/down = forward/back (if both sticks push forward, the stronger one wins).\
+Right pad
+\f1\b0  \'97 labelled FWD \'b7 slide \uc0\u8592  \u8594  \'b7 BACK: left/right = 
+\f0\b slide sideways
+\f1\b0 , up/down = forward/back. If both pads push forward, the stronger one applies.\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-Diagonals combine axes (e.g. forward + slide, or forward + turn).\
+Diagonals combine axes (forward + turn, forward + slide, etc.).\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-Both sticks are 
-\f0\b spring-centred
-\f1\b0 : release = knob returns to centre and the robot stops (a brake frame is sent immediately).\
+Above the pads: 
+\f0\b \uc0\u8612  Slide left
+\f1\b0  and 
+\f0\b \uc0\u8614  Slide right
+\f1\b0  buttons \'97 hold either to side-walk without using the right pad.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+The readout under the pads shows the live values: fwd \'b7 side \'b7 turn.\
 \pard\pardeftab720\sa298\pardirnatural\partightenfactor0
 
-\f0\b\fs36 \cf0 2.2 Stopping\
+\f0\b\fs36 \cf0 2.2 Behaviour\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 
 \f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-Release either stick (or return it to centre) \uc0\u8594  stop.\
+Both pads are 
+\f0\b spring-centred
+\f1\b0 : the knob follows the pointer while held, and on release it snaps back to the centre \'97 which stops the robot and sends the brake frames immediately.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Drive input is sent live at ~60 Hz while a pad is held (zero-latency updates on press and move).\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Turning and sliding are also available from the buttons above the pad, so the robot can be driven pad-only, buttons-only, or a mix.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.3 Stopping\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Release the pad (or return it to the centre) \uc0\u8594  stop.\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 
 \f0\b \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
 STOP
-\f1\b0  button \uc0\u8594  official brake frames. 
-\f0\b E-STOP
-\f1\b0  \uc0\u8594  latches until \u10226  Return.\
+\f1\b0  button \uc0\u8594  official brake frames (0x21010C0B with values 0 and 1).\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+E-STOP
+\f1\b0  \uc0\u8594  latched: all commands are blocked until 
+\f0\b \uc0\u10226  Return
+\f1\b0  is pressed (also cancels any action mid-play).\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-Switching browser tab / losing window focus also stops the robot (safety).\
+Switching browser tab, minimising the window or losing focus also stops the robot (safety).\
 \pard\pardeftab720\sa298\pardirnatural\partightenfactor0
 
-\f0\b\fs36 \cf0 2.3 Sensitivity and speed (Advanced)\
+\f0\b\fs36 \cf0 2.4 Tuning (Advanced panel)\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 
 \fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
 Stick curve
-\f1\b0  \'97 Linear / Soft (default) / Soft+: higher curve = finer control near the centre.\
+\f1\b0  \'97 Linear / Soft (default, 1.25) / Soft+: higher value = finer control near the centre, which is what most people want for delicate moves.\
 
 \f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
 Speed scale
-\f1\b0  \'97 50 % / 75 % / 100 % / 150 %: multiplies the configured maxima (defaults: 0.5 m/s forward, 0.4 m/s lateral, 0.8 rad/s turn).\
+\f1\b0  \'97 50 % / 75 % / 100 % (default) / 150 %: multiplies the configured maxima below.\
 
 \f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-Forward / Turn / Lateral sign
-\f1\b0  \'97 flips each axis if a direction feels reversed; applied instantly.\
+Configured maxima
+\f1\b0  \'97 forward/back 0.5 m/s, lateral slide 0.4 m/s, turn 0.8 rad/s.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Forward sign / Turn sign / Lateral sign
+\f1\b0  \'97 flips the axis if a direction is reversed on your unit; changes apply immediately.\
 
 \f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
 Joystick mode
 \f1\b0  \'97 
-\f3\i Velocity frames
-\f1\i0  (proven) or 
+\f3\i Velocity frames (proven)
+\f1\i0  sends the standard velocity frames (0x140 / 0x145 / 0x141); 
 \f3\i Retroid / official SDK
-\f1\i0  (sends the same 42-byte frames as the physical remote to UDP 12121).\
+\f1\i0  instead sends the same 42-byte frames as the physical remote (UDP 12121) and lets the robot's own controller interpret the sticks.\
 \pard\pardeftab720\sa298\pardirnatural\partightenfactor0
 
-\f0\b\fs36 \cf0 2.4 Keyboard (alternative to the sticks)\
+\f0\b\fs36 \cf0 2.5 Keyboard (alternative to the pads)\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 
 \fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
 W / S
-\f1\b0  (or \uc0\u8593 /\u8595 ) \'97 forward / back \'b7 
+\f1\b0  (or \uc0\u8593  / \u8595 ) \'97 forward / back \'b7 
 \f0\b A / D
-\f1\b0  (or \uc0\u8592 /\u8594 ) \'97 turn \'b7 
-\f0\b Space
-\f1\b0  \'97 E-stop (hold) \'b7 leaving the keys stops the robot.\
+\f1\b0  (or \uc0\u8592  / \u8594 ) \'97 turn.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Space
+\f1\b0  \'97 hold-to E-stop.\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+\cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Releasing the keys stops the robot; keys and pads can be mixed.\
 \pard\pardeftab720\sa321\pardirnatural\partightenfactor0
 
 \f0\b\fs48 \cf0 3. Camera setup\

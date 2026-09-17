@@ -55,32 +55,44 @@
 
 <h1>2. Two-joystick movement</h1>
 
-<h2>2.1 Layout</h2>
+<h2>2.1 Layout (exactly as in the app)</h2>
 <ul>
-  <li><b>Left stick</b> — up/down = forward/back · left/right = turn.</li>
-  <li><b>Right stick</b> — left/right = slide (side-walk) · up/down = forward/back (if both sticks push forward, the stronger one wins).</li>
-  <li>Diagonals combine axes (e.g. forward + slide, or forward + turn).</li>
-  <li>Both sticks are <b>spring-centred</b>: release = knob returns to centre and the robot stops (a brake frame is sent immediately).</li>
+  <li><b>Left pad</b> — labelled <span class="mono">FWD &middot; turn &larr; &rarr; &middot; BACK</span>: up/down = forward/back, left/right = <b>turn</b>.</li>
+  <li><b>Right pad</b> — labelled <span class="mono">FWD &middot; slide &larr; &rarr; &middot; BACK</span>: left/right = <b>slide sideways</b>, up/down = forward/back. If both pads push forward, the stronger one applies.</li>
+  <li>Diagonals combine axes (forward + turn, forward + slide, etc.).</li>
+  <li>Above the pads: <b>&#8612; Slide left</b> and <b>&#8614; Slide right</b> buttons — hold either to side-walk without using the right pad.</li>
+  <li>The readout under the pads shows the live values: <span class="mono">fwd &middot; side &middot; turn</span>.</li>
 </ul>
 
-<h2>2.2 Stopping</h2>
+<h2>2.2 Behaviour</h2>
 <ul>
-  <li>Release either stick (or return it to centre) → stop.</li>
-  <li><b>STOP</b> button → official brake frames. <b>E-STOP</b> → latches until ⟲ Return.</li>
-  <li>Switching browser tab / losing window focus also stops the robot (safety).</li>
+  <li>Both pads are <b>spring-centred</b>: the knob follows the pointer while held, and on release it snaps back to the centre — which stops the robot and sends the brake frames immediately.</li>
+  <li>Drive input is sent live at ~60 Hz while a pad is held (zero-latency updates on press and move).</li>
+  <li>Turning and sliding are also available from the buttons above the pad, so the robot can be driven pad-only, buttons-only, or a mix.</li>
 </ul>
 
-<h2>2.3 Sensitivity and speed (Advanced)</h2>
+<h2>2.3 Stopping</h2>
 <ul>
-  <li><b>Stick curve</b> — Linear / Soft (default) / Soft+: higher curve = finer control near the centre.</li>
-  <li><b>Speed scale</b> — 50 % / 75 % / 100 % / 150 %: multiplies the configured maxima (defaults: 0.5 m/s forward, 0.4 m/s lateral, 0.8 rad/s turn).</li>
-  <li><b>Forward / Turn / Lateral sign</b> — flips each axis if a direction feels reversed; applied instantly.</li>
-  <li><b>Joystick mode</b> — <i>Velocity frames</i> (proven) or <i>Retroid / official SDK</i> (sends the same 42-byte frames as the physical remote to UDP 12121).</li>
+  <li>Release the pad (or return it to the centre) &rarr; stop.</li>
+  <li><b>STOP</b> button &rarr; official brake frames (0x21010C0B with values 0 and 1).</li>
+  <li><b>E-STOP</b> &rarr; latched: all commands are blocked until <b>&#10226; Return</b> is pressed (also cancels any action mid-play).</li>
+  <li>Switching browser tab, minimising the window or losing focus also stops the robot (safety).</li>
 </ul>
 
-<h2>2.4 Keyboard (alternative to the sticks)</h2>
+<h2>2.4 Tuning (Advanced panel)</h2>
 <ul>
-  <li><b>W / S</b> (or ↑/↓) — forward / back · <b>A / D</b> (or ←/→) — turn · <b>Space</b> — E-stop (hold) · leaving the keys stops the robot.</li>
+  <li><b>Stick curve</b> — Linear / Soft (default, 1.25) / Soft+: higher value = finer control near the centre, which is what most people want for delicate moves.</li>
+  <li><b>Speed scale</b> — 50 % / 75 % / 100 % (default) / 150 %: multiplies the configured maxima below.</li>
+  <li><b>Configured maxima</b> — forward/back 0.5 m/s, lateral slide 0.4 m/s, turn 0.8 rad/s.</li>
+  <li><b>Forward sign / Turn sign / Lateral sign</b> — flips the axis if a direction is reversed on your unit; changes apply immediately.</li>
+  <li><b>Joystick mode</b> — <i>Velocity frames (proven)</i> sends the standard velocity frames (0x140 / 0x145 / 0x141); <i>Retroid / official SDK</i> instead sends the same 42-byte frames as the physical remote (UDP 12121) and lets the robot's own controller interpret the sticks.</li>
+</ul>
+
+<h2>2.5 Keyboard (alternative to the pads)</h2>
+<ul>
+  <li><b>W / S</b> (or &uarr; / &darr;) — forward / back &middot; <b>A / D</b> (or &larr; / &rarr;) — turn.</li>
+  <li><b>Space</b> — hold-to E-stop.</li>
+  <li>Releasing the keys stops the robot; keys and pads can be mixed.</li>
 </ul>
 
 <h1>3. Camera setup</h1>
