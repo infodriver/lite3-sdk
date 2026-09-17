@@ -55,46 +55,44 @@ how the command was issued.\
 \cf2 \
 \pard\pardeftab720\sa321\pardirnatural\partightenfactor0
 
-\f0\b\fs48 \cf0 Delivered sample \'97 2026-09-16 18:00 (America/Los_Angeles)\
+\f0\b\fs48 \cf0 Delivered sample \'97 2026-09-16 18:12 (America/Los_Angeles)\
 \pard\pardeftab720\sa298\pardirnatural\partightenfactor0
 
-\fs36 \cf0 What was executed\
-\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
-
-\f1\b0\fs24 \cf0 The requested low-speed motion protocol, run on the robot with the manufacturer\'92s own high-level UDP interface (no third-party software), while a timestamped log collector ran alongside:\
-\pard\pardeftab720\li720\pardirnatural\partightenfactor0
-\cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-hold neutral \'97 8.0 s\
-\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-move slowly forward \'97 0.10 m/s for 2.9 s\
-\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-hold \'97 2.0 s\
-\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-return (reverse) \'97 \uc0\u8722 0.10 m/s for 2.4 s\
-\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-hold \'97 5.0 s, then stop (brake frames)\
-\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
-
-\f0\b\fs36 \cf0 Files\
+\fs36 \cf0 What was executed (robot moved: forward, then back)\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 
 \f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-pilot_slow_move-20260916-180040.csv \'97 one row per event: timestamps (ISO + elapsed), command rows (elapsed_s, cmd_vx/vy/wz, result) and frame rows (code, size, decoded fields)\
+robot stood up (posture command) \'97 then hold neutral 8.4 s\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-pilot_slow_move-20260916-180040.json \'97 same data incl. full metadata block\
+move slowly forward \'97 +0.10 m/s for 2.4 s\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-pilot_slow_move-20260916-180040.hex \'97 raw manufacturer frames (hex), as received\
+hold \'97 2.1 s\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+return (reverse) \'97 \uc0\u8722 0.10 m/s for 2.5 s\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+hold \'97 4.5 s, then stop (brake frames)\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 Files (this run)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+pilot_slow_move3_sample.csv \'97 one row per event: ISO + elapsed timestamps; command rows (vx/vy/wz + result); frame rows (code, size, decoded fields)\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+pilot_slow_move3_sample.json \'97 same data + full metadata block\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+pilot_slow_move3-20260916-181238.hex \'97 raw manufacturer frames (hex) as received\
 \pard\pardeftab720\sa298\pardirnatural\partightenfactor0
 
 \f0\b\fs36 \cf0 Log summary\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 
 \f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-duration: 22.0 s \'b7 6 commands \'b7 107 streamed frames\
+duration 20.0 s \'b7 5 timestamped commands \'b7 115 streamed frames\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-streamed frame codes observed: 0x0F01 (28), 0x0F02 (45), 0x0F03 (29), 0x0906 (5) \'97 low-level telemetry frames of the Lite3 motion host (magic 0x1105 header follows the SDK\'92s RobotData/telemetry family)\
+streamed frame codes: 0x0F02 (49), 0x0F03 (31), 0x0F01 (30), 0x0906 (5) \'97 low-level telemetry frames of the Lite3 motion host\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-commands are logged at send time with the exact values; the stream is appended with receive timestamps\
+commands logged at send time with exact values; inbound frames appended with receive timestamps\
 \pard\pardeftab720\sa298\pardirnatural\partightenfactor0
 
 \f0\b\fs36 \cf0 Metadata (as collected)\
@@ -103,20 +101,29 @@ commands are logged at send time with the exact values; the stream is appended w
 \f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
 robot model: DeepRobotics Jueying Lite3\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-controller: Lite3 motion host, high-level UDP interface (commands 43893, telemetry 43897)\
+controller: Lite3 motion host \'97 high-level UDP interface (commands :43893, telemetry :43897)\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-SDK used for logging: lite3sdk (zero-dependency, same protocol as the manufacturer\'92s high-level SDK)\
+logging SDK: lite3sdk (zero-dependency; same protocol family as the manufacturer\'92s high-level SDK)\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-logging frequency: as streamed by the robot (receive-timestamped); commands logged per send\
+logging frequency: as streamed by the robot, receive-timestamped; every command logged per send\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-units: SI (m, m/s, rad, rad/s); raw frames also provided in hex\
+units: SI (m, m/s, rad, rad/s); raw frames also supplied in hex\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
-configured limits used: vx \uc0\u8804  0.5 m/s, vy \u8804  0.4 m/s, wz \u8804  0.8 rad/s (test ran at 0.1 m/s)\
+limits applied: vx \uc0\u8804  0.5 m/s, vy \u8804  0.4 m/s, wz \u8804  0.8 rad/s (test performed at 0.10 m/s)\
 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
 how the command was issued: direct UDP velocity frames (0x140 forward/back, 0x145 lateral, 0x141 yaw) with the manufacturer\'92s mode/heartbeat frames, sent from a control laptop on the robot\'92s Wi-Fi\
 \pard\pardeftab720\sa298\pardirnatural\partightenfactor0
 
-\f0\b\fs36 \cf0 Still to be supplied by the robot integrator (not available on the high-level interface)\
+\f0\b\fs36 \cf0 Notes\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+An earlier attempt with identical commands produced no motion because the robot was sitting/lying \'97 velocity frames are only honoured while the robot is standing. Cause identified, and the successful run below includes the stand step.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+UDP provides no acknowledgement; motion was confirmed by direct observation during the run.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 Still to be supplied (not available on the high-level interface)\
 \pard\pardeftab720\li720\pardirnatural\partightenfactor0
 
 \f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
@@ -130,5 +137,5 @@ firmware/Deeprcs and low-level SDK versions, joint limits, acceleration limits, 
 \f2\i Lite3_MotionSDK
 \f1\i0  (1 kHz RobotData: joint position/velocity/torque, IMU, contact forces) or the 
 \f2\i Lite3_ROS
-\f1\i0  bridge (rosbag record /joint_states /leg_odom2 /imu/data), run with the robot\'92s ~/jy_exe/conf/network.toml pointing at the logging host. Once that access is available, the same maneuver will be re-run and the joint-level CSV/JSON added to this document.\
+\f1\i0  bridge (rosbag of /joint_states, /leg_odom2, /imu/data), run with the robot\'92s ~/jy_exe/conf/network.toml pointing at the logging host. Once that access is available the same manoeuvre will be re-run and the joint-level CSV/JSON added here.\
 }

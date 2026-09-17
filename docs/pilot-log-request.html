@@ -1,0 +1,83 @@
+<html><head><meta charset="utf-8"><title>Pilot underway — sample log request &amp; delivered sample</title></head>
+<body>
+<h1>Pilot underway — sample log request</h1>
+
+<p>To get the pilot underway, could you first send us a sample log from one simple, low-speed movement using the manufacturer&rsquo;s existing tools? The operator can hold the robot in a neutral pose for 5&ndash;10 seconds, move one joint slowly through a safe, moderate range, hold for 2&ndash;3 seconds, return to the starting position, and remain stationary for another 5 seconds. No additional Synexis software is required.</p>
+
+<h2>Log contents (ideally)</h2>
+<ul>
+  <li>timestamps;</li>
+  <li>joint name/ID;</li>
+  <li>commanded and measured position and velocity;</li>
+  <li>torque or motor current if available;</li>
+  <li>controller state;</li>
+  <li>any warnings, faults or safety events.</li>
+</ul>
+
+<h2>Robot &amp; command metadata (please also include)</h2>
+<ul>
+  <li>robot model;</li>
+  <li>controller/firmware and SDK versions;</li>
+  <li>logging frequency;</li>
+  <li>units;</li>
+  <li>joint limits;</li>
+  <li>configured speed and acceleration limits;</li>
+  <li>payload;</li>
+  <li>how the command was issued.</li>
+</ul>
+
+<p>The manufacturer&rsquo;s original log plus a CSV or JSON export would be ideal.</p>
+
+<hr/>
+
+<h1>Delivered sample — 2026-09-16 18:12 (America/Los_Angeles)</h1>
+
+<h2>What was executed (robot moved: forward, then back)</h2>
+<ul>
+  <li>robot stood up (posture command) &mdash; then hold neutral 8.4 s</li>
+  <li>move slowly forward &mdash; +0.10 m/s for 2.4 s</li>
+  <li>hold &mdash; 2.1 s</li>
+  <li>return (reverse) &mdash; &minus;0.10 m/s for 2.5 s</li>
+  <li>hold &mdash; 4.5 s, then stop (brake frames)</li>
+</ul>
+
+<h2>Files (this run)</h2>
+<ul>
+  <li>pilot_slow_move3_sample.csv &mdash; one row per event: ISO + elapsed timestamps; command rows (vx/vy/wz + result); frame rows (code, size, decoded fields)</li>
+  <li>pilot_slow_move3_sample.json &mdash; same data + full metadata block</li>
+  <li>pilot_slow_move3-20260916-181238.hex &mdash; raw manufacturer frames (hex) as received</li>
+</ul>
+
+<h2>Log summary</h2>
+<ul>
+  <li>duration 20.0 s &middot; 5 timestamped commands &middot; 115 streamed frames</li>
+  <li>streamed frame codes: 0x0F02 (49), 0x0F03 (31), 0x0F01 (30), 0x0906 (5) &mdash; low-level telemetry frames of the Lite3 motion host</li>
+  <li>commands logged at send time with exact values; inbound frames appended with receive timestamps</li>
+</ul>
+
+<h2>Metadata (as collected)</h2>
+<ul>
+  <li>robot model: DeepRobotics Jueying Lite3</li>
+  <li>controller: Lite3 motion host &mdash; high-level UDP interface (commands :43893, telemetry :43897)</li>
+  <li>logging SDK: lite3sdk (zero-dependency; same protocol family as the manufacturer&rsquo;s high-level SDK)</li>
+  <li>logging frequency: as streamed by the robot, receive-timestamped; every command logged per send</li>
+  <li>units: SI (m, m/s, rad, rad/s); raw frames also supplied in hex</li>
+  <li>limits applied: vx &le; 0.5 m/s, vy &le; 0.4 m/s, wz &le; 0.8 rad/s (test performed at 0.10 m/s)</li>
+  <li>how the command was issued: direct UDP velocity frames (0x140 forward/back, 0x145 lateral, 0x141 yaw) with the manufacturer&rsquo;s mode/heartbeat frames, sent from a control laptop on the robot&rsquo;s Wi-Fi</li>
+</ul>
+
+<h2>Notes</h2>
+<ul>
+  <li>An earlier attempt with identical commands produced no motion because the robot was sitting/lying &mdash; velocity frames are only honoured while the robot is standing. Cause identified, and the successful run below includes the stand step.</li>
+  <li>UDP provides no acknowledgement; motion was confirmed by direct observation during the run.</li>
+</ul>
+
+<h2>Still to be supplied (not available on the high-level interface)</h2>
+<ul>
+  <li>per-joint commanded vs measured position/velocity and torque/motor current at joint level</li>
+  <li>controller state and internal warnings/faults</li>
+  <li>firmware/Deeprcs and low-level SDK versions, joint limits, acceleration limits, payload</li>
+</ul>
+<p>These require the manufacturer&rsquo;s low-level tooling: <em>Lite3_MotionSDK</em> (1 kHz RobotData: joint position/velocity/torque, IMU, contact forces) or the <em>Lite3_ROS</em> bridge (rosbag of /joint_states, /leg_odom2, /imu/data), run with the robot&rsquo;s ~/jy_exe/conf/network.toml pointing at the logging host. Once that access is available the same manoeuvre will be re-run and the joint-level CSV/JSON added here.</p>
+
+</body></html>
