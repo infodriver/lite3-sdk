@@ -1,0 +1,317 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2907
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\froman\fcharset0 Times-Italic;
+}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\deftab720
+\pard\pardeftab720\sa321\pardirnatural\partightenfactor0
+
+\f0\b\fs48 \cf0 \expnd0\expndtw0\kerning0
+Lite3 Pilot \'97 joystick movement logic & full command catalog\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 Complete, implementation-accurate reference for the web console (port 8123) and the Python SDK. All values are the live defaults in config.json.\
+\pard\pardeftab720\sa321\pardirnatural\partightenfactor0
+
+\f0\b\fs48 \cf0 1. Joystick movement logic\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\fs36 \cf0 1.1 Inputs\
+\pard\pardeftab720\pardirnatural\qc\partightenfactor0
+
+\fs24 \cf0 Input\
+Mapping\
+\pard\pardeftab720\pardirnatural\partightenfactor0
+\cf0 Left pad
+\f1\b0  (labels FWD / turn / BACK)\
+up/down = forward/back (vx) \'b7 left/right = turn (wz)\
+
+\f0\b Right pad
+\f1\b0  (labels FWD / slide / BACK)\
+left/right = slide sideways (vy) \'b7 up/down = forward/back \'97 the stronger of the two pads wins for vx\
+
+\f0\b \uc0\u8612  Slide left / \u8614  Slide right
+\f1\b0  buttons\
+hold to side-walk at 0.4 m/s \'d7 speed-scale (sends lateral velocity; in Retroid mode the side axis of the 42-byte frame)\
+
+\f0\b Keyboard
+\f1\b0 \
+W/S or \uc0\u8593 /\u8595  = forward/back \'b7 A/D or \u8592 /\u8594  = turn \'b7 Space (hold) = E-STOP\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+\cf0 Pads and keys can be mixed; diagonals combine axes (e.g. forward + slide).\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1.2 Per-axis processing (identical for both pads)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	1	\expnd0\expndtw0\kerning0
+Vector from pointer:
+\f1\b0  each pad returns x/y in \uc0\u8722 1\'85+1 relative to its centre.\
+
+\f0\b \kerning1\expnd0\expndtw0 	2	\expnd0\expndtw0\kerning0
+Deadzone:
+\f1\b0  magnitude below 
+\f0\b 0.08
+\f1\b0  = neutral (no command).\
+
+\f0\b \kerning1\expnd0\expndtw0 	3	\expnd0\expndtw0\kerning0
+Normalisation:
+\f1\b0  the magnitude past the deadzone is rescaled so small pushes still count: s = (m \uc0\u8722  0.08) / (1 \u8722  0.08), clamped to 1.\
+
+\f0\b \kerning1\expnd0\expndtw0 	4	\expnd0\expndtw0\kerning0
+Stick curve:
+\f1\b0  s = s ^ curve when curve > 1 (default 
+\f0\b 1.25
+\f1\b0 , \'93Soft\'94) \'97 finer control near the centre.\
+
+\f0\b \kerning1\expnd0\expndtw0 	5	\expnd0\expndtw0\kerning0
+Speed scale:
+\f1\b0  multiply by the scale setting (50 / 75 / 
+\f0\b 100
+\f1\b0  / 150 %).\
+
+\f0\b \kerning1\expnd0\expndtw0 	6	\expnd0\expndtw0\kerning0
+Axis assignment:
+\f1\b0  vx = \uc0\u8722 y \'d7 s \'d7 scale \'b7 wz = x \'d7 s \'d7 scale (left pad) \'b7 vy = x \'d7 s \'d7 scale (right pad).\
+
+\f0\b \kerning1\expnd0\expndtw0 	7	\expnd0\expndtw0\kerning0
+Reverse-steer mirror:
+\f1\b0  when reversing (vx < 0) the steering sign is flipped, so \'93left\'94 still turns the robot left while backing up.\
+
+\f0\b \kerning1\expnd0\expndtw0 	8	\expnd0\expndtw0\kerning0
+Clamps (server side):
+\f1\b0  vx \uc0\u8804  
+\f0\b 0.5 m/s
+\f1\b0  \'b7 vy \uc0\u8804  
+\f0\b 0.4 m/s
+\f1\b0  \'b7 wz \uc0\u8804  
+\f0\b 0.8 rad/s
+\f1\b0  \'b7 per-axis 
+\f0\b sign
+\f1\b0  (Forward / Turn / Lateral) applied on send.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1.3 Sending\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Commands are produced by a 
+\f0\b 60 ms
+\f1\b0  loop; additionally a drive update fires immediately on press and on every move event (zero-latency response).\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+The engine streams at up to 
+\f0\b 50 Hz
+\f1\b0  (rate_hz) while the request is fresh, keeping the robot in auto mode (0x21010C03 interleaved) with a heartbeat (0x21040001) every 
+\f0\b 300 ms
+\f1\b0 .\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f0\b \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Tail:
+\f1\b0  the last velocity is kept alive for 
+\f0\b 300 ms
+\f1\b0  after the last input, then zeroed; when a velocity stream ends the engine also fires the 
+\f0\b official brake frames
+\f1\b0  (0x21010C0B, values 0 and 1) for ~0.35 s so the robot cannot coast.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1.4 Release & stopping\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Pads are 
+\f0\b spring-centred
+\f1\b0 : on release the knob animates home (160 ms) and the robot stops \'97 a stop command is sent immediately, not on the next tick.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Release anywhere (window-level capture), losing window focus, hiding the tab, 
+\f0\b STOP
+\f1\b0 , or 
+\f0\b E-STOP
+\f1\b0  all stop the robot.\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f0\b \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+E-STOP
+\f1\b0  latches: every command is refused and stop frames keep being sent until 
+\f0\b \uc0\u10226  Return
+\f1\b0 ; a latched E-stop also cancels a running action.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1.5 Drive modes (Advanced \uc0\u8594  Joystick mode)\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Velocity frames (proven)
+\f1\b0  \'97 sends 0x140 (x), 0x145 (y), 0x141 (yaw), each type 1 with one 
+\f0\b f64
+\f1\b0  payload (value field 8), plus the auto-mode frame.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Retroid / official SDK
+\f1\b0  \'97 sends the same 42-byte frames as the physical remote to UDP 
+\f0\b 12121
+\f1\b0 : header 0x55 0x66, ctrl, data_len 32, seq, id 1, checksum (byte-sum of payload); payload = 10 \'d7 u16 buttons + 4 \'d7 i16 axes (left_x, left_y, right_x, right_y) + 2 \'d7 u16 axis buttons; range \'b11000. Mapping: left_y = forward, right_x = yaw (sign configurable), left_x = slide. The robot's own controller then interprets the sticks.\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 1.6 Velocity semantics\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Velocity commands are honoured 
+\f0\b only while the robot is standing
+\f1\b0  (in auto mode); while sitting/lying they are ignored silently.\
+\kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+UDP gives 
+\f0\b no acknowledgement
+\f1\b0 ; confirm motion visually or via telemetry.\
+\pard\pardeftab720\sa321\pardirnatural\partightenfactor0
+
+\f0\b\fs48 \cf0 2. Command catalog (identical to the app buttons)\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\fs36 \cf0 2.1 Built-in top-row buttons\
+\pard\pardeftab720\pardirnatural\qc\partightenfactor0
+
+\fs24 \cf0 Button\
+Command\
+Code\
+Behaviour\
+\pard\pardeftab720\pardirnatural\partightenfactor0
+
+\f1\b0 \cf0 \uc0\u55357 \u56341  STAND\
+posture toggle\
+0x21010202\
+One code for both poses: from sitting it stands; if already standing it sits (state-tracked, skipped when already there)\
+\uc0\u55358 \u56977  SIT\
+posture toggle\
+0x21010202\
+Same toggle, aimed at the sitting pose\
+\uc0\u55357 \u56395  HELLO\
+hello pose\
+0x21010506\
+Sits first if needed, then replays the pose 3\'d7 at ~1 Hz (verified on the robot)\
+\uc0\u55357 \u56698  DANCE\
+dance / moonwalk\
+0x2101030C\
+Standing pose; verified\
+\uc0\u55357 \u56580  TURN OVER\
+turn over\
+0x21010205\
+Rolls the robot onto its back; forces the sitting pose first; slow replay\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.2 Recovery block (from upside down)\
+\pard\pardeftab720\pardirnatural\qc\partightenfactor0
+
+\fs24 \cf0 Button\
+Command\
+Code\
+Behaviour\
+\pard\pardeftab720\pardirnatural\partightenfactor0
+
+\f1\b0 \cf0 \uc0\u8634  Recover left / \u8635  Recover right\
+stand toggle used as recovery\
+0x21010202\
+Replays the stand toggle at 1 Hz to bring the robot back to its feet (proved on the robot)\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.3 Poses & actions\
+\pard\pardeftab720\pardirnatural\qc\partightenfactor0
+
+\fs24 \cf0 Button\
+Command name\
+Code\
+Required pose\
+\pard\pardeftab720\pardirnatural\partightenfactor0
+
+\f1\b0 \cf0 \uc0\u55356 \u57088  Twist\
+twist\
+0x21010204\
+standing\
+\uc0\u55356 \u57130 \u65039  Twist jump\
+twist_jump\
+0x2101020D\
+standing (forced)\
+\uc0\u55358 \u56792  Backflip\
+backflip\
+0x21010502\
+sitting (forced)\
+\uc0\u55358 \u56728  Long jump\
+long_jump\
+0x2101050B\
+sitting (forced)\
+\uc0\u55357 \u56395  Hello / \u55357 \u56698  Dance / \u55357 \u56580  Turn over\
+hello / dance / turn_over\
+0x21010506 / 0x2101030C / 0x21010205\
+sit / stand / sit (forced)\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.4 Modes\
+\pard\pardeftab720\pardirnatural\qc\partightenfactor0
+
+\fs24 \cf0 Button\
+Command name\
+Code\
+Behaviour\
+\pard\pardeftab720\pardirnatural\partightenfactor0
+
+\f1\b0 \cf0 \uc0\u55356 \u57262  Manual mode\
+mode_manual\
+0x21010C02\
+single-shot switch (remote/manual mode)\
+\uc0\u55357 \u56697 \u65039  Move mode\
+mode_move\
+0x21010D06\
+single-shot switch (move mode)\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.5 Gaits\
+\pard\pardeftab720\pardirnatural\qc\partightenfactor0
+
+\fs24 \cf0 Button\
+Command name\
+Code\
+Behaviour\
+\pard\pardeftab720\pardirnatural\partightenfactor0
+
+\f1\b0 \cf0 \uc0\u55357 \u56354  Slow\
+gait_slow\
+0x21010300\
+single-shot gait switch\
+\uc0\u55357 \u57014  Medium\
+gait_medium\
+0x21010307\
+single-shot gait switch\
+\uc0\u9889  Fast\
+gait_fast\
+0x21010303\
+single-shot gait switch\
+\uc0\u55357 \u56347  Crawl\
+gait_crawl\
+0x21010406\
+single-shot gait switch\
+\pard\pardeftab720\sa298\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 2.6 Execution rules that apply to every command\
+\pard\pardeftab720\li720\pardirnatural\partightenfactor0
+
+\fs24 \cf0 \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Posture handling:
+\f1\b0  an action declares its required pose; the console re-poses only when the tracked state is known to differ, or always when force_posture is set (rolls, jumps, hello). With an unknown state and no force, the action is sent directly (press STAND/SIT first if the robot is in the other pose).\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Replay:
+\f1\b0  poses/rolls are re-sent 3\'d7 at ~1 Hz (\'93slow replay\'94); modes/gaits are single-shot; other frames use a short burst.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Cancellation:
+\f1\b0  E-STOP aborts any action mid-play.\
+
+\f0\b \kerning1\expnd0\expndtw0 	\'95	\expnd0\expndtw0\kerning0
+Safety:
+\f1\b0  keep the area clear and the physical E-stop within reach for any moving command.\
+\pard\pardeftab720\sa240\pardirnatural\partightenfactor0
+
+\f2\i \cf0 Sources:
+\f1\i0  DeepRobotics repositories and manuals, community protocol tables, and live verification on the robot (hello, dance, stand/sit, recovery, velocity driving, camera). Codes marked \'93forced/logged\'94 but not yet verified on this unit should be confirmed on a stand before regular use.\
+}

@@ -1,0 +1,109 @@
+<html><head><meta charset="utf-8"><title>Lite3 Pilot — joystick movement logic &amp; full command catalog</title></head>
+<body>
+<h1>Lite3 Pilot — joystick movement logic &amp; full command catalog</h1>
+<p>Complete, implementation-accurate reference for the web console (port 8123) and the Python SDK. All values are the live defaults in <span class="mono">config.json</span>.</p>
+
+<h1>1. Joystick movement logic</h1>
+
+<h2>1.1 Inputs</h2>
+<table border="1" cellpadding="4" cellspacing="0">
+<tr><th>Input</th><th>Mapping</th></tr>
+<tr><td><b>Left pad</b> (labels FWD / turn / BACK)</td><td>up/down = forward/back (vx) &middot; left/right = turn (wz)</td></tr>
+<tr><td><b>Right pad</b> (labels FWD / slide / BACK)</td><td>left/right = slide sideways (vy) &middot; up/down = forward/back &mdash; the stronger of the two pads wins for vx</td></tr>
+<tr><td><b>&#8612; Slide left / &#8614; Slide right</b> buttons</td><td>hold to side-walk at 0.4 m/s &times; speed-scale (sends lateral velocity; in Retroid mode the side axis of the 42-byte frame)</td></tr>
+<tr><td><b>Keyboard</b></td><td>W/S or &uarr;/&darr; = forward/back &middot; A/D or &larr;/&rarr; = turn &middot; Space (hold) = E-STOP</td></tr>
+</table>
+<p>Pads and keys can be mixed; diagonals combine axes (e.g. forward + slide).</p>
+
+<h2>1.2 Per-axis processing (identical for both pads)</h2>
+<ol>
+  <li><b>Vector from pointer:</b> each pad returns x/y in &minus;1&hellip;+1 relative to its centre.</li>
+  <li><b>Deadzone:</b> magnitude below <b>0.08</b> = neutral (no command).</li>
+  <li><b>Normalisation:</b> the magnitude past the deadzone is rescaled so small pushes still count: <span class="mono">s = (m &minus; 0.08) / (1 &minus; 0.08)</span>, clamped to 1.</li>
+  <li><b>Stick curve:</b> <span class="mono">s = s ^ curve</span> when curve &gt; 1 (default <b>1.25</b>, &ldquo;Soft&rdquo;) &mdash; finer control near the centre.</li>
+  <li><b>Speed scale:</b> multiply by the scale setting (50 / 75 / <b>100</b> / 150 %).</li>
+  <li><b>Axis assignment:</b> <span class="mono">vx = &minus;y &times; s &times; scale</span> &middot; <span class="mono">wz = x &times; s &times; scale</span> (left pad) &middot; <span class="mono">vy = x &times; s &times; scale</span> (right pad).</li>
+  <li><b>Reverse-steer mirror:</b> when reversing (<span class="mono">vx &lt; 0</span>) the steering sign is flipped, so &ldquo;left&rdquo; still turns the robot left while backing up.</li>
+  <li><b>Clamps (server side):</b> vx &le; <b>0.5 m/s</b> &middot; vy &le; <b>0.4 m/s</b> &middot; wz &le; <b>0.8 rad/s</b> &middot; per-axis <b>sign</b> (Forward / Turn / Lateral) applied on send.</li>
+</ol>
+
+<h2>1.3 Sending</h2>
+<ul>
+  <li>Commands are produced by a <b>60 ms</b> loop; additionally a drive update fires immediately on press and on every move event (zero-latency response).</li>
+  <li>The engine streams at up to <b>50 Hz</b> (rate_hz) while the request is fresh, keeping the robot in auto mode (<span class="mono">0x21010C03</span> interleaved) with a heartbeat (<span class="mono">0x21040001</span>) every <b>300 ms</b>.</li>
+  <li><b>Tail:</b> the last velocity is kept alive for <b>300 ms</b> after the last input, then zeroed; when a velocity stream ends the engine also fires the <b>official brake frames</b> (<span class="mono">0x21010C0B</span>, values 0 and 1) for ~0.35 s so the robot cannot coast.</li>
+</ul>
+
+<h2>1.4 Release &amp; stopping</h2>
+<ul>
+  <li>Pads are <b>spring-centred</b>: on release the knob animates home (160 ms) and the robot stops &mdash; a stop command is sent immediately, not on the next tick.</li>
+  <li>Release anywhere (window-level capture), losing window focus, hiding the tab, <b>STOP</b>, or <b>E-STOP</b> all stop the robot.</li>
+  <li><b>E-STOP</b> latches: every command is refused and stop frames keep being sent until <b>&#10226; Return</b>; a latched E-stop also cancels a running action.</li>
+</ul>
+
+<h2>1.5 Drive modes (Advanced &rarr; Joystick mode)</h2>
+<ul>
+  <li><b>Velocity frames (proven)</b> — sends <span class="mono">0x140</span> (x), <span class="mono">0x145</span> (y), <span class="mono">0x141</span> (yaw), each type 1 with one <b>f64</b> payload (value field 8), plus the auto-mode frame.</li>
+  <li><b>Retroid / official SDK</b> — sends the same 42-byte frames as the physical remote to UDP <b>12121</b>: header 0x55 0x66, ctrl, data_len 32, seq, id 1, checksum (byte-sum of payload); payload = 10 &times; u16 buttons + 4 &times; i16 axes (left_x, left_y, right_x, right_y) + 2 &times; u16 axis buttons; range &plusmn;1000. Mapping: left_y = forward, right_x = yaw (sign configurable), left_x = slide. The robot's own controller then interprets the sticks.</li>
+</ul>
+
+<h2>1.6 Velocity semantics</h2>
+<ul>
+  <li>Velocity commands are honoured <b>only while the robot is standing</b> (in auto mode); while sitting/lying they are ignored silently.</li>
+  <li>UDP gives <b>no acknowledgement</b>; confirm motion visually or via telemetry.</li>
+</ul>
+
+<h1>2. Command catalog (identical to the app buttons)</h1>
+
+<h2>2.1 Built-in top-row buttons</h2>
+<table border="1" cellpadding="4" cellspacing="0">
+<tr><th>Button</th><th>Command</th><th>Code</th><th>Behaviour</th></tr>
+<tr><td>&#128021; STAND</td><td>posture toggle</td><td>0x21010202</td><td>One code for both poses: from sitting it stands; if already standing it sits (state-tracked, skipped when already there)</td></tr>
+<tr><td>&#129681; SIT</td><td>posture toggle</td><td>0x21010202</td><td>Same toggle, aimed at the sitting pose</td></tr>
+<tr><td>&#128075; HELLO</td><td>hello pose</td><td>0x21010506</td><td>Sits first if needed, then replays the pose 3&times; at ~1 Hz (verified on the robot)</td></tr>
+<tr><td>&#128378; DANCE</td><td>dance / moonwalk</td><td>0x2101030C</td><td>Standing pose; verified</td></tr>
+<tr><td>&#128260; TURN OVER</td><td>turn over</td><td>0x21010205</td><td>Rolls the robot onto its back; forces the sitting pose first; slow replay</td></tr>
+</table>
+
+<h2>2.2 Recovery block (from upside down)</h2>
+<table border="1" cellpadding="4" cellspacing="0">
+<tr><th>Button</th><th>Command</th><th>Code</th><th>Behaviour</th></tr>
+<tr><td>&#8634; Recover left / &#8635; Recover right</td><td>stand toggle used as recovery</td><td>0x21010202</td><td>Replays the stand toggle at 1 Hz to bring the robot back to its feet (proved on the robot)</td></tr>
+</table>
+
+<h2>2.3 Poses &amp; actions</h2>
+<table border="1" cellpadding="4" cellspacing="0">
+<tr><th>Button</th><th>Command name</th><th>Code</th><th>Required pose</th></tr>
+<tr><td>&#127744; Twist</td><td>twist</td><td>0x21010204</td><td>standing</td></tr>
+<tr><td>&#127786;&#65039; Twist jump</td><td>twist_jump</td><td>0x2101020D</td><td>standing (forced)</td></tr>
+<tr><td>&#129496; Backflip</td><td>backflip</td><td>0x21010502</td><td>sitting (forced)</td></tr>
+<tr><td>&#129432; Long jump</td><td>long_jump</td><td>0x2101050B</td><td>sitting (forced)</td></tr>
+<tr><td>&#128075; Hello / &#128378; Dance / &#128260; Turn over</td><td>hello / dance / turn_over</td><td>0x21010506 / 0x2101030C / 0x21010205</td><td>sit / stand / sit (forced)</td></tr>
+</table>
+
+<h2>2.4 Modes</h2>
+<table border="1" cellpadding="4" cellspacing="0">
+<tr><th>Button</th><th>Command name</th><th>Code</th><th>Behaviour</th></tr>
+<tr><td>&#127918; Manual mode</td><td>mode_manual</td><td>0x21010C02</td><td>single-shot switch (remote/manual mode)</td></tr>
+<tr><td>&#128377;&#65039; Move mode</td><td>mode_move</td><td>0x21010D06</td><td>single-shot switch (move mode)</td></tr>
+</table>
+
+<h2>2.5 Gaits</h2>
+<table border="1" cellpadding="4" cellspacing="0">
+<tr><th>Button</th><th>Command name</th><th>Code</th><th>Behaviour</th></tr>
+<tr><td>&#128034; Slow</td><td>gait_slow</td><td>0x21010300</td><td>single-shot gait switch</td></tr>
+<tr><td>&#128694; Medium</td><td>gait_medium</td><td>0x21010307</td><td>single-shot gait switch</td></tr>
+<tr><td>&#9889; Fast</td><td>gait_fast</td><td>0x21010303</td><td>single-shot gait switch</td></tr>
+<tr><td>&#128027; Crawl</td><td>gait_crawl</td><td>0x21010406</td><td>single-shot gait switch</td></tr>
+</table>
+
+<h2>2.6 Execution rules that apply to every command</h2>
+<ul>
+  <li><b>Posture handling:</b> an action declares its required pose; the console re-poses only when the tracked state is known to differ, or always when <span class="mono">force_posture</span> is set (rolls, jumps, hello). With an unknown state and no force, the action is sent directly (press STAND/SIT first if the robot is in the other pose).</li>
+  <li><b>Replay:</b> poses/rolls are re-sent 3&times; at ~1 Hz (&ldquo;slow replay&rdquo;); modes/gaits are single-shot; other frames use a short burst.</li>
+  <li><b>Cancellation:</b> E-STOP aborts any action mid-play.</li>
+  <li><b>Safety:</b> keep the area clear and the physical E-stop within reach for any moving command.</li>
+</ul>
+
+<p><i>Sources:</i> DeepRobotics repositories and manuals, community protocol tables, and live verification on the robot (hello, dance, stand/sit, recovery, velocity driving, camera). Codes marked &ldquo;forced/logged&rdquo; but not yet verified on this unit should be confirmed on a stand before regular use.</p>
+</body></html>
